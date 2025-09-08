@@ -1,163 +1,58 @@
-<!DOCTYPE html>
-<html lang="it">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>HTML Preview Tool</title>
-  <link rel="icon" href="favicon.ico">
-  <style>
-    body {
-      font-family: "Segoe UI", sans-serif;
-      margin: 0;
-      background: #f8f9fa;
-      color: #1d1d1b;
-    }
-    header {
-      background: #ffcc00;
-      padding: 1rem;
-      text-align: center;
-      font-size: 1.4rem;
-      font-weight: bold;
-      color: #003082;
-    }
-    main {
-      max-width: 1200px;
-      margin: 2rem auto;
-      padding: 1rem;
-    }
-    h2 {
-      color: #003082;
-      margin-bottom: .5rem;
-    }
-    .editor-container {
-      display: flex;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      overflow: hidden;
-      background: #fff;
-      height: 300px;
-    }
-    .line-numbers {
-      background: #f1f1f1;
-      color: #666;
-      padding: 8px 6px;
-      text-align: right;
-      user-select: none;
-      font-family: monospace;
-      font-size: 14px;
-      line-height: 20px;
-      border-right: 1px solid #ccc;
-      overflow: hidden;
-    }
-    .editor {
-      flex: 1;
-      padding: 8px;
-      font-family: monospace;
-      font-size: 14px;
-      line-height: 20px;
-      border: none;
-      outline: none;
-      resize: none;
-      overflow: auto;
-      white-space: pre;
-    }
-    .buttons {
-      margin-top: 1rem;
-      display: flex;
-      gap: 10px;
-    }
-    button {
-      background: #003082;
-      color: #fff;
-      border: none;
-      padding: .6rem 1rem;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-      transition: background .2s;
-    }
-    button:hover {
-      background: #002060;
-    }
-    button:active {
-      background: #001540;
-    }
-    iframe {
-      width: 100%;
-      height: 300px;
-      border: 1px solid #ccc;
-      border-radius: 6px;
-      margin-top: 1rem;
-      background: #fff;
-    }
-  </style>
-</head>
-<body>
-  <header>HTML Preview Tool</header>
-  <main>
-    <h2>Inserisci codice HTML</h2>
-    <div class="editor-container">
-      <div id="lineNumbers" class="line-numbers">01</div>
-      <textarea id="editor" class="editor" placeholder="Incolla qui il tuo codice HTML..."></textarea>
-    </div>
-    <div class="buttons">
-      <button onclick="updatePreview(this)">Aggiorna Preview</button>
-      <button onclick="downloadHTML(this)">Scarica HTML</button>
-      <button onclick="copyCode(this)">Copia Codice</button>
-    </div>
-    <h2>Preview</h2>
-    <iframe id="preview"></iframe>
-  </main>
+<style>
+  .editor-container {
+    display: flex;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+    height: 300px;
+  }
+  .line-numbers {
+    background: #f1f1f1;
+    color: #666;
+    padding: 8px 6px;
+    text-align: right;
+    user-select: none;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 20px;
+    border-right: 1px solid #ccc;
+    overflow: hidden;
+    white-space: pre;      /* <--- forza ogni numero su una nuova riga */
+  }
+  .editor {
+    flex: 1;
+    padding: 8px;
+    font-family: monospace;
+    font-size: 14px;
+    line-height: 20px;
+    border: none;
+    outline: none;
+    resize: none;
+    overflow: auto;
+    white-space: pre;
+  }
+</style>
 
-  <script>
-    const editor = document.getElementById('editor');
-    const lineNumbers = document.getElementById('lineNumbers');
+<script>
+  const editor = document.getElementById('editor');
+  const lineNumbers = document.getElementById('lineNumbers');
 
-    function updateLineNumbers() {
-      const lines = editor.value.split('\n').length;
-      let nums = '';
-      for (let i = 1; i <= lines; i++) {
-        nums += (i < 10 ? '0' + i : i) + '\n';
-      }
-      lineNumbers.textContent = nums;
-      // sincronizza scroll
-      lineNumbers.scrollTop = editor.scrollTop;
+  function updateLineNumbers() {
+    const lines = editor.value.split('\n').length;
+    let nums = '';
+    for (let i = 1; i <= lines; i++) {
+      nums += (i < 10 ? '0' + i : i) + '\n';   // ogni numero va a capo
     }
+    lineNumbers.textContent = nums;
+    lineNumbers.scrollTop = editor.scrollTop;   // sincronizza lo scroll
+  }
 
-    editor.addEventListener('input', updateLineNumbers);
-    editor.addEventListener('scroll', () => {
-      lineNumbers.scrollTop = editor.scrollTop;
-    });
+  editor.addEventListener('input', updateLineNumbers);
+  editor.addEventListener('scroll', () => {
+    lineNumbers.scrollTop = editor.scrollTop;
+  });
 
-    function updatePreview(btn) {
-      btn.textContent = "Caricamento...";
-      const preview = document.getElementById('preview');
-      preview.srcdoc = editor.value;
-      setTimeout(() => { btn.textContent = "Aggiorna Preview"; }, 1000);
-    }
+  updateLineNumbers();
+</script>
 
-    function downloadHTML(btn) {
-      btn.textContent = "Download...";
-      const blob = new Blob([editor.value], {type: 'text/html'});
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      const filename = prompt("Nome file:", "pagina.html") || "pagina.html";
-      a.href = url;
-      a.download = filename;
-      a.click();
-      URL.revokeObjectURL(url);
-      setTimeout(() => { btn.textContent = "Scarica HTML"; }, 1000);
-    }
-
-    function copyCode(btn) {
-      btn.textContent = "Copiato!";
-      editor.select();
-      document.execCommand("copy");
-      setTimeout(() => { btn.textContent = "Copia Codice"; }, 1000);
-    }
-
-    // inizializza numeri di riga
-    updateLineNumbers();
-  </script>
-</body>
-</html>
