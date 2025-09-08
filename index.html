@@ -1,288 +1,163 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>HTML Playground</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>HTML Preview Tool</title>
   <link rel="icon" href="favicon.ico">
   <style>
-    /* Branding-inspired palette: deep blue and warm yellow (do not mention brand) */
-    :root{
-      --brand-blue:#1d48b4; /* strong blue */
-      --brand-yellow:#ffd200; /* warm yellow */
-      --bg:#f7f8fb;
-      --card:#ffffff;
-      --muted:#6b7280;
-      --radius:12px;
-      --gap:18px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
-      --ui-font: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+    body {
+      font-family: "Segoe UI", sans-serif;
+      margin: 0;
+      background: #f8f9fa;
+      color: #1d1d1b;
     }
-
-    *{box-sizing:border-box}
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#ffffff)}
-    body{font-family:var(--ui-font);color:#0f172a;padding:20px}
-
-    .app{
-      max-width:1200px;margin:0 auto;display:grid;grid-template-columns:1fr 420px;gap:24px;align-items:start;
+    header {
+      background: #ffcc00;
+      padding: 1rem;
+      text-align: center;
+      font-size: 1.4rem;
+      font-weight: bold;
+      color: #003082;
     }
-
-    header{grid-column:1/-1;display:flex;align-items:center;gap:16px;margin-bottom:6px}
-    .logo{
-      width:56px;height:56px;border-radius:8px;display:flex;align-items:center;justify-content:center;background:var(--brand-yellow);box-shadow:0 1px 0 rgba(0,0,0,0.04);
+    main {
+      max-width: 1200px;
+      margin: 2rem auto;
+      padding: 1rem;
     }
-    .logo svg{width:34px;height:34px}
-    h1{font-size:20px;margin:0}
-    p.lead{margin:0;color:var(--muted);font-size:13px}
-
-    .pane{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:0 6px 18px rgba(6,15,40,0.04)}
-    .editor-pane{min-height:520px;display:flex;flex-direction:column}
-
-    .section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
-    .section-title h2{font-size:14px;margin:0}
-    .section-title small{color:var(--muted);font-size:12px}
-
-    /* Editor with line numbers */
-    .editor-wrap{display:flex;border-radius:8px;overflow:hidden;border:1px solid #e6e9f2}
-    .gutter{background:#f3f6fb;padding:12px 8px;font-family:var(--mono);font-size:13px;color:#4b5563;line-height:20px;min-width:54px;text-align:right;user-select:none}
-    .codearea{flex:1;position:relative}
-    textarea.code{
-      width:100%;height:440px;padding:12px 14px;border:0;resize:none;outline:none;font-family:var(--mono);font-size:13px;line-height:20px;background:transparent;color:#0b1220;overflow:auto;
+    h2 {
+      color: #003082;
+      margin-bottom: .5rem;
     }
-    .codearea .overlay{position:absolute;inset:0;pointer-events:none}
-
-    /* Controls */
-    .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-    .btn{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:600;font-size:14px}
-    .btn:active{transform:translateY(1px)}
-
-    .btn-blue{background:var(--brand-blue);color:white}
-    .btn-yellow{background:var(--brand-yellow);color:#04204a}
-    .btn-ghost{background:transparent;border:1px solid #e2e8f0;color:var(--brand-blue)}
-
-    .controls input[type='text']{padding:10px;border-radius:10px;border:1px solid #e6e9f2;min-width:160px}
-
-    /* Preview pane */
-    .preview-pane{min-height:520px;display:flex;flex-direction:column}
-    .preview-frame{flex:1;border:1px solid #e6e9f2;border-radius:8px;overflow:hidden}
-    iframe.preview{width:100%;height:100%;border:0;background:#fff}
-
-    /* Copy/feedback microinteractions */
-    .hint{font-size:12px;color:var(--muted);margin-top:8px}
-
-    footer{grid-column:1/-1;margin-top:10px;color:var(--muted);font-size:13px}
-
-    /* Responsive */
-    @media (max-width:980px){
-      .app{grid-template-columns:1fr;}
-      .preview-pane{order:2}
-      header{flex-direction:row;gap:10px}
+    .editor-container {
+      display: flex;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      overflow: hidden;
+      background: #fff;
+      height: 300px;
     }
-
-    /* Hover subtle */
-    .btn:hover{opacity:0.95}
-
+    .line-numbers {
+      background: #f1f1f1;
+      color: #666;
+      padding: 8px 6px;
+      text-align: right;
+      user-select: none;
+      font-family: monospace;
+      font-size: 14px;
+      line-height: 20px;
+      border-right: 1px solid #ccc;
+      overflow: hidden;
+    }
+    .editor {
+      flex: 1;
+      padding: 8px;
+      font-family: monospace;
+      font-size: 14px;
+      line-height: 20px;
+      border: none;
+      outline: none;
+      resize: none;
+      overflow: auto;
+      white-space: pre;
+    }
+    .buttons {
+      margin-top: 1rem;
+      display: flex;
+      gap: 10px;
+    }
+    button {
+      background: #003082;
+      color: #fff;
+      border: none;
+      padding: .6rem 1rem;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background .2s;
+    }
+    button:hover {
+      background: #002060;
+    }
+    button:active {
+      background: #001540;
+    }
+    iframe {
+      width: 100%;
+      height: 300px;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+      margin-top: 1rem;
+      background: #fff;
+    }
   </style>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <div class="logo" aria-hidden="true">
-        <!-- abstract mark: circular stylized envelope -->
-        <svg viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-          <rect x="2" y="4" width="20" height="16" rx="3" fill="#04204a" />
-          <path d="M3 6l9 7 9-7" stroke="#ffd200" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" />
-        </svg>
-      </div>
-      <div>
-        <h1>HTML Playground</h1>
-        <p class="lead">Incolla il tuo codice HTML. Vedi i numeri di riga, anteprima e scarica il file.</p>
-      </div>
-    </header>
+  <header>HTML Preview Tool</header>
+  <main>
+    <h2>Inserisci codice HTML</h2>
+    <div class="editor-container">
+      <div id="lineNumbers" class="line-numbers">01</div>
+      <textarea id="editor" class="editor" placeholder="Incolla qui il tuo codice HTML..."></textarea>
+    </div>
+    <div class="buttons">
+      <button onclick="updatePreview(this)">Aggiorna Preview</button>
+      <button onclick="downloadHTML(this)">Scarica HTML</button>
+      <button onclick="copyCode(this)">Copia Codice</button>
+    </div>
+    <h2>Preview</h2>
+    <iframe id="preview"></iframe>
+  </main>
 
-    <main class="pane editor-pane" aria-labelledby="editor-title">
-      <div class="section-title"><h2 id="editor-title">Editor HTML</h2><small>Incolla qui il tuo codice — i numeri di riga sono visibili</small></div>
+  <script>
+    const editor = document.getElementById('editor');
+    const lineNumbers = document.getElementById('lineNumbers');
 
-      <div class="editor-wrap" role="region" aria-label="Editor codice">
-        <div class="gutter" id="gutter">1</div>
-        <div class="codearea">
-          <textarea id="code" class="code" spellcheck="false" placeholder="Incolla qui il codice HTML..."></textarea>
-        </div>
-      </div>
-
-      <div class="controls" style="margin-top:14px">
-        <input type="text" id="filename" placeholder="Nome file: es. pagina.html" aria-label="Nome file da scaricare">
-        <button id="downloadBtn" class="btn btn-blue">Scarica (Scegli nome)</button>
-        <button id="copyBtn" class="btn btn-yellow">Copia tutto</button>
-        <button id="clearBtn" class="btn btn-ghost">Svuota</button>
-      </div>
-      <div class="hint">Suggerimento: il campo nome file è opzionale — se vuoto verrà usato <code>pagina.html</code>.</div>
-    </main>
-
-    <aside class="pane preview-pane" aria-labelledby="preview-title">
-      <div class="section-title"><h2 id="preview-title">Anteprima</h2><small>Visualizza la pagina risultante dal codice incollato</small></div>
-      <div class="preview-frame" id="previewFrame" role="region">
-        <iframe id="preview" class="preview" sandbox="allow-scripts allow-forms"></iframe>
-      </div>
-
-      <div style="margin-top:12px;display:flex;gap:8px;align-items:center">
-        <button id="refreshBtn" class="btn btn-blue">Aggiorna anteprima</button>
-        <button id="openNewBtn" class="btn btn-ghost">Apri in nuova finestra</button>
-      </div>
-      <div class="hint">La preview viene caricata in un iframe isolato. Alcuni script o risorse esterne potrebbero non essere caricati per motivi di sicurezza.</div>
-    </aside>
-
-    <footer class="pane" style="display:flex;align-items:center;justify-content:space-between">
-      <div>
-        <strong>Nota</strong>
-        <div style="color:var(--muted);font-size:13px">Questa app è pronta per essere inserita in un repository GitHub come singolo file (index.html). È responsive e non contiene riferimenti a terze parti.</div>
-      </div>
-      <div style="font-size:13px;color:var(--muted)">Versione demo • UI ispirata a palette istituzionale</div>
-    </footer>
-  </div>
-
-<script>
-  const codeEl = document.getElementById('code');
-  const gutter = document.getElementById('gutter');
-  const preview = document.getElementById('preview');
-  const downloadBtn = document.getElementById('downloadBtn');
-  const copyBtn = document.getElementById('copyBtn');
-  const clearBtn = document.getElementById('clearBtn');
-  const refreshBtn = document.getElementById('refreshBtn');
-  const openNewBtn = document.getElementById('openNewBtn');
-  const filenameInput = document.getElementById('filename');
-
-  // Update line numbers in gutter
-  function updateGutter(){
-    const lines = codeEl.value.split('\n').length;
-    let out = '';
-    for(let i=1;i<=lines;i++){
-      out += i + '\n';
+    function updateLineNumbers() {
+      const lines = editor.value.split('\n').length;
+      let nums = '';
+      for (let i = 1; i <= lines; i++) {
+        nums += (i < 10 ? '0' + i : i) + '\n';
+      }
+      lineNumbers.textContent = nums;
+      // sincronizza scroll
+      lineNumbers.scrollTop = editor.scrollTop;
     }
-    gutter.textContent = out.trim();
-  }
 
-  // Sync scrolling
-  codeEl.addEventListener('scroll', ()=>{
-    gutter.scrollTop = codeEl.scrollTop;
-  });
+    editor.addEventListener('input', updateLineNumbers);
+    editor.addEventListener('scroll', () => {
+      lineNumbers.scrollTop = editor.scrollTop;
+    });
 
-  // Update preview
-  function updatePreview(){
-    const html = codeEl.value;
-    // Create blob and set src to object URL for safer isolation
-    const blob = new Blob([html], {type: 'text/html'});
-    const url = URL.createObjectURL(blob);
-    preview.src = url;
-    // revoke previous after load
-    preview.onload = ()=>{ setTimeout(()=>URL.revokeObjectURL(url), 5000); };
-  }
-
-  // Download file
-  function downloadHTML(){
-    const name = (filenameInput.value || 'pagina.html').trim();
-    const safeName = name.replace(/[\\/:*?"<>|]+/g, '_');
-    const blob = new Blob([codeEl.value], {type:'text/html'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = safeName;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    setTimeout(()=>URL.revokeObjectURL(a.href), 2000);
-  }
-
-  // Copy to clipboard
-  async function copyAll(){
-    try{
-      await navigator.clipboard.writeText(codeEl.value);
-      return true;
-    }catch(e){
-      // fallback
-      codeEl.select();
-      document.execCommand('copy');
-      window.getSelection().removeAllRanges();
-      return false;
+    function updatePreview(btn) {
+      btn.textContent = "Caricamento...";
+      const preview = document.getElementById('preview');
+      preview.srcdoc = editor.value;
+      setTimeout(() => { btn.textContent = "Aggiorna Preview"; }, 1000);
     }
-  }
 
-  // Button animation: change label to show contextual message
-  async function withButtonFeedback(btn, action, messages={loading:'Caricamento...', done:'Fatto!', error:'Errore'}){
-    const orig = btn.innerHTML;
-    btn.disabled = true;
-    btn.innerHTML = messages.loading;
-    try{
-      const res = await action();
-      btn.innerHTML = messages.done;
-      setTimeout(()=>{ btn.innerHTML = orig; btn.disabled=false; }, 1400);
-      return res;
-    }catch(e){
-      console.error(e);
-      btn.innerHTML = messages.error;
-      setTimeout(()=>{ btn.innerHTML = orig; btn.disabled=false; }, 1400);
-      throw e;
-    }
-  }
-
-  // Event bindings
-  codeEl.addEventListener('input', ()=>{
-    updateGutter();
-  });
-
-  // Initialize with a small template
-  const starter = `<!doctype html>\n<html>\n  <head>\n    <meta charset=\"utf-8\">\n    <meta name=\"viewport\" content=\"width=device-width,initial-scale=1\">\n    <title>Pagina esempio</title>\n  </head>\n  <body>\n    <h1>Ciao — esempio</h1>\n    <p>Modifica questo HTML e premi "Aggiorna anteprima".</p>\n  </body>\n</html>`;
-
-  codeEl.value = starter;
-  updateGutter();
-  updatePreview();
-
-  // Download
-  downloadBtn.addEventListener('click', ()=>{
-    withButtonFeedback(downloadBtn, ()=>{ downloadHTML(); return Promise.resolve(); }, {loading:'Preparazione download...', done:'Download avviato!'}).catch(()=>{});
-  });
-
-  // Copy
-  copyBtn.addEventListener('click', ()=>{
-    withButtonFeedback(copyBtn, ()=>copyAll(), {loading:'Copia in corso...', done:'Copiato!'}).catch(()=>{});
-  });
-
-  // Clear
-  clearBtn.addEventListener('click', ()=>{
-    withButtonFeedback(clearBtn, ()=>{ codeEl.value=''; updateGutter(); return Promise.resolve(); }, {loading:'Svuotamento...', done:'Editor svuotato!'}).catch(()=>{});
-  });
-
-  // Refresh preview
-  refreshBtn.addEventListener('click', ()=>{
-    withButtonFeedback(refreshBtn, ()=>{ updatePreview(); return Promise.resolve(); }, {loading:'Aggiornamento...', done:'Aggiornato!'}).catch(()=>{});
-  });
-
-  // Open in new window
-  openNewBtn.addEventListener('click', ()=>{
-    withButtonFeedback(openNewBtn, ()=>{
-      const html = codeEl.value;
-      const blob = new Blob([html], {type:'text/html'});
+    function downloadHTML(btn) {
+      btn.textContent = "Download...";
+      const blob = new Blob([editor.value], {type: 'text/html'});
       const url = URL.createObjectURL(blob);
-      window.open(url, '_blank');
-      setTimeout(()=>URL.revokeObjectURL(url),5000);
-      return Promise.resolve();
-    }, {loading:'Apro nuova finestra...', done:'Finestra aperta!'}).catch(()=>{});
-  });
-
-  // Keyboard shortcut: Ctrl/Cmd+S to download
-  document.addEventListener('keydown', (e)=>{
-    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='s'){
-      e.preventDefault();
-      downloadBtn.click();
+      const a = document.createElement('a');
+      const filename = prompt("Nome file:", "pagina.html") || "pagina.html";
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      setTimeout(() => { btn.textContent = "Scarica HTML"; }, 1000);
     }
-    if((e.ctrlKey||e.metaKey) && e.key.toLowerCase()==='b'){
-      e.preventDefault();
-      refreshBtn.click();
+
+    function copyCode(btn) {
+      btn.textContent = "Copiato!";
+      editor.select();
+      document.execCommand("copy");
+      setTimeout(() => { btn.textContent = "Copia Codice"; }, 1000);
     }
-  });
 
-  // Ensure gutter updates at load
-  window.addEventListener('load', updateGutter);
-
-</script>
+    // inizializza numeri di riga
+    updateLineNumbers();
+  </script>
 </body>
 </html>
