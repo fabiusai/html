@@ -96,60 +96,30 @@
   </div>
 
 <script>
-  const codeEl=document.getElementById('code');
-  const gutter=document.getElementById('gutter');
-  const preview=document.getElementById('preview');
-
   function updateGutter(){
-    const lines=codeEl.value.split('\\n').length;
-    let out='';
-    for(let i=1;i<=lines;i++){
-      out+=(i<10?'0'+i:i)+'\\n';
+    const lines = codeEl.value.split('\n').length;
+    let out = '';
+    for(let i=1; i<=lines; i++){
+      out += (i < 10 ? '0' + i : i) + '\n'; // <-- singolo \n
     }
-    gutter.textContent=out;
-    gutter.scrollTop=codeEl.scrollTop;
+    gutter.textContent = out;
+    gutter.scrollTop = codeEl.scrollTop;
   }
 
-  codeEl.addEventListener('input',updateGutter);
-  codeEl.addEventListener('scroll',()=>{gutter.scrollTop=codeEl.scrollTop});
-
-  function updatePreview(){
-    const html=codeEl.value;
-    const blob=new Blob([html],{type:'text/html'});
-    const url=URL.createObjectURL(blob);
-    preview.src=url;
-    preview.onload=()=>setTimeout(()=>URL.revokeObjectURL(url),5000);
-  }
-
-  document.getElementById('downloadBtn').onclick=()=>{
-    const name=(document.getElementById('filename').value||'pagina.html').trim();
-    const blob=new Blob([codeEl.value],{type:'text/html'});
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download=name;
-    a.click();
-  }
-
-  document.getElementById('copyBtn').onclick=()=>{
-    navigator.clipboard.writeText(codeEl.value);
-  }
-
-  document.getElementById('clearBtn').onclick=()=>{
-    codeEl.value='';
-    updateGutter();
-  }
-
-  document.getElementById('refreshBtn').onclick=()=>updatePreview();
-
-  document.getElementById('openNewBtn').onclick=()=>{
-    const html=codeEl.value;
-    const blob=new Blob([html],{type:'text/html'});
-    const url=URL.createObjectURL(blob);
-    window.open(url,'_blank');
-  }
-
-  const starter='<!doctype html>\\n<html>\\n<head><meta charset=\"utf-8\"><title>Esempio</title></head>\\n<body><h1>Ciao</h1></body>\\n</html>';
-  codeEl.value=starter;updateGutter();updatePreview();
+  const starter = `<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Esempio</title>
+</head>
+<body>
+  <h1>Ciao</h1>
+</body>
+</html>`;
+  codeEl.value = starter;
+  updateGutter();
+  updatePreview();
 </script>
+
 </body>
 </html>
