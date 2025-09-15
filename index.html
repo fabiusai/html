@@ -39,13 +39,24 @@
     .codearea{flex:1;overflow:hidden}
     textarea.code{width:100%;height:100%;padding:12px 14px;border:0;resize:none;outline:none;font-family:var(--mono);font-size:13px;line-height:20px;background:transparent;color:#0b1220;overflow:auto;white-space:pre}
 
-    .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
+    .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center;}
     .btn{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:600;font-size:14px}
     .btn:active{transform:translateY(1px)}
     .btn-blue{background:var(--brand-blue);color:white}
     .btn-yellow{background:var(--brand-yellow);color:#04204a}
     .btn-ghost{background:transparent;border:1px solid #e2e8f0;color:var(--brand-blue)}
-    .controls input[type='text']{padding:10px;border-radius:10px;border:1px solid #e6e9f2;min-width:160px}
+    
+    .file-controls { display: flex; gap: 6px; align-items: center; }
+    .file-controls > * {
+        padding: 10px;
+        border-radius: 10px;
+        border: 1px solid #e6e9f2;
+        font-size: 14px;
+        font-family: var(--ui-font);
+    }
+    .file-controls input[type='text']#filename { min-width: 160px; }
+    .file-controls input[type='text']#custom-extension { width: 80px; }
+
 
     .preview-pane{min-height:520px;display:flex;flex-direction:column}
     .preview-frame{flex:1;border:1px solid #e6e9f2;border-radius:8px;overflow:hidden}
@@ -65,7 +76,7 @@
       <div class="logo" aria-hidden="true"></div>
       <div>
         <h1>HTML Playground</h1>
-        <p class="lead">Incolla il tuo codice HTML. Vedi i numeri di riga, anteprima e scarica il file.</p>
+        <p class="lead">Incolla il tuo codice. Vedi i numeri di riga, anteprima e scarica il file.</p>
       </div>
     </header>
 
@@ -76,7 +87,22 @@
         <div class="codearea"><textarea id="code" class="code" spellcheck="false"></textarea></div>
       </div>
       <div class="controls">
-        <input type="text" id="filename" placeholder="Nome file: pagina.html">
+        <div class="file-controls">
+          <input type="text" id="filename" placeholder="Nome file" value="pagina">
+          <select id="file-extension" aria-label="Seleziona estensione file">
+            <option value=".html" selected>.html</option>
+            <option value=".css">.css</option>
+            <option value=".js">.js</option>
+            <option value=".py">.py</option>
+            <option value=".sh">.sh</option>
+            <option value=".xml">.xml</option>
+            <option value=".svg">.svg</option>
+            <option value=".txt">.txt</option>
+            <option value="">Nessuna estensione</option>
+            <option value="custom">Altro...</option>
+          </select>
+          <input type="text" id="custom-extension" placeholder=".ext" style="display:none;">
+        </div>
         <button id="downloadBtn" class="btn btn-blue">Scarica</button>
         <button id="copyBtn" class="btn btn-yellow">Copia tutto</button>
         <button id="clearBtn" class="btn btn-ghost">Svuota</button>
@@ -99,12 +125,15 @@
   const codeEl = document.getElementById('code');
   const gutter = document.getElementById('gutter');
   const preview = document.getElementById('preview');
+  
+  const extensionSelect = document.getElementById('file-extension');
+  const customExtensionInput = document.getElementById('custom-extension');
 
   function updateGutter(){
     const lines = codeEl.value.split('\n').length;
     let out = '';
     for(let i=1; i<=lines; i++){
-      out += (i < 10 ? '0' + i : i) + '\n'; // numeri sequenziali
+      out += (i < 10 ? '0' + i : i) + '\n';
     }
     gutter.textContent = out;
     gutter.scrollTop = codeEl.scrollTop;
@@ -122,13 +151,35 @@
   }
 
   document.getElementById('downloadBtn').onclick=()=>{
-    const name=(document.getElementById('filename').value||'pagina.html').trim();
-    const blob=new Blob([codeEl.value],{type:'text/html'});
-    const a=document.createElement('a');
-    a.href=URL.createObjectURL(blob);
-    a.download=name;
+    const baseName = (document.getElementById('filename').value.trim() || 'file');
+    let extension = extensionSelect.value;
+
+    if (extension === 'custom') {
+      extension = customExtensionInput.value.trim();
+      if (!extension) {
+        extension = '.txt'; 
+      } else if (extension.charAt(0) !== '.') {
+        extension = '.' + extension; 
+      }
+    }
+    
+    const finalFilename = baseName + extension;
+    const blob = new Blob([codeEl.value], {type:'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = finalFilename;
     a.click();
+    URL.revokeObjectURL(a.href);
   }
+
+  extensionSelect.addEventListener('change', () => {
+    if (extensionSelect.value === 'custom') {
+      customExtensionInput.style.display = 'inline-block';
+      customExtensionInput.focus();
+    } else {
+      customExtensionInput.style.display = 'none';
+    }
+  });
 
   document.getElementById('copyBtn').onclick=()=>{
     navigator.clipboard.writeText(codeEl.value);
