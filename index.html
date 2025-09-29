@@ -28,7 +28,7 @@
     p.lead{margin:0;color:var(--muted);font-size:13px}
 
     .pane{background:var(--card);border-radius:var(--radius);padding:18px;box-shadow:0 6px 18px rgba(6,15,40,0.04)}
-    .editor-pane{min-height:520px;display:flex;flex-direction:column}
+    .editor-pane{height:580px;display:flex;flex-direction:column}
 
     .section-title{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px}
     .section-title h2{font-size:14px;margin:0}
@@ -39,7 +39,6 @@
     .codearea{flex:1;overflow:hidden}
     textarea.code{width:100%;height:100%;padding:12px 14px;border:0;resize:none;outline:none;font-family:var(--mono);font-size:13px;line-height:20px;background:transparent;color:#0b1220;overflow:auto;white-space:pre}
 
-    /* New Search Controls styling */
     .search-controls {
       display: flex;
       gap: 8px;
@@ -58,7 +57,6 @@
       flex-shrink: 0;
     }
      
-    .controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px;align-items:center;}
     .btn{display:inline-flex;align-items:center;gap:10px;padding:10px 14px;border-radius:10px;border:0;cursor:pointer;font-weight:600;font-size:14px}
     .btn:active{transform:translateY(1px)}
     .btn-blue{background:var(--brand-blue);color:white}
@@ -75,13 +73,25 @@
     }
     .file-controls input[type='text']#filename { min-width: 160px; }
     .file-controls input[type='text']#custom-extension { width: 80px; }
-
+    
+    .main-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+      margin-top: 12px;
+    }
+    .control-group {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
 
     .preview-pane{min-height:520px;display:flex;flex-direction:column}
     .preview-frame{flex:1;border:1px solid #e6e9f2;border-radius:8px;overflow:hidden}
     iframe.preview{width:100%;height:100%;border:0;background:#fff}
-
-    .hint{font-size:12px;color:var(--muted);margin-top:8px}
 
     footer{grid-column:1/-1;margin-top:10px;color:var(--muted);font-size:13px}
 
@@ -106,7 +116,6 @@
         <div class="codearea"><textarea id="code" class="code" spellcheck="false"></textarea></div>
       </div>
       
-      <!-- Search and Replace Controls -->
       <div class="search-controls">
         <input type="text" id="findInput" placeholder="Cerca...">
         <button id="findBtn" class="btn btn-ghost">Trova</button>
@@ -115,27 +124,32 @@
         <button id="replaceAllBtn" class="btn btn-ghost">Tutti</button>
       </div>
 
-      <div class="controls">
-        <div class="file-controls">
-          <input type="text" id="filename" placeholder="Nome file" value="pagina">
-          <select id="file-extension" aria-label="Seleziona estensione file">
-            <option value=".html" selected>.html</option>
-            <option value=".css">.css</option>
-            <option value=".js">.js</option>
-            <option value=".py">.py</option>
-            <option value=".sh">.sh</option>
-            <option value=".xml">.xml</option>
-            <option value=".svg">.svg</option>
-            <option value=".txt">.txt</option>
-            <option value="">Nessuna estensione</option>
-            <option value="custom">Altro...</option>
-          </select>
-          <input type="text" id="custom-extension" placeholder=".ext" style="display:none;">
+      <div class="main-controls">
+        <div class="control-group">
+          <button id="copyBtn" class="btn btn-yellow">Copia tutto</button>
+          <button id="pasteBtn" class="btn btn-ghost">Sostituisci con Appunti</button>
+          <button id="clearBtn" class="btn btn-ghost">Svuota Editor</button>
         </div>
-        <button id="importBtn" class="btn btn-blue">Importa File</button>
-        <button id="downloadBtn" class="btn btn-blue">Scarica</button>
-        <button id="copyBtn" class="btn btn-yellow">Copia tutto</button>
-        <button id="clearBtn" class="btn btn-ghost">Svuota</button>
+        <div class="control-group">
+          <button id="importBtn" class="btn btn-blue">Importa File</button>
+          <div class="file-controls">
+            <input type="text" id="filename" placeholder="Nome file" value="pagina">
+            <select id="file-extension" aria-label="Seleziona estensione file">
+              <option value=".html" selected>.html</option>
+              <option value=".css">.css</option>
+              <option value=".js">.js</option>
+              <option value=".py">.py</option>
+              <option value=".sh">.sh</option>
+              <option value=".xml">.xml</option>
+              <option value=".svg">.svg</option>
+              <option value=".txt">.txt</option>
+              <option value="">Nessuna estensione</option>
+              <option value="custom">Altro...</option>
+            </select>
+            <input type="text" id="custom-extension" placeholder=".ext" style="display:none;">
+          </div>
+          <button id="downloadBtn" class="btn btn-blue">Scarica</button>
+        </div>
       </div>
     </main>
 
@@ -151,164 +165,123 @@
     <footer class="pane">UI demo</footer>
   </div>
 
-  <!-- Hidden file input for import -->
   <input type="file" id="fileInput" style="display: none;" accept=".html,.css,.js,.py,.sh,.xml,.svg,.txt,text/*">
 
 <script>
-  // Editor and preview elements
+  // Elementi UI
   const codeEl = document.getElementById('code');
   const gutter = document.getElementById('gutter');
   const preview = document.getElementById('preview');
   
-  // File controls
-  const extensionSelect = document.getElementById('file-extension');
-  const customExtensionInput = document.getElementById('custom-extension');
-  
-  // New import elements
-  const importBtn = document.getElementById('importBtn');
-  const fileInput = document.getElementById('fileInput');
-
-  // New search and replace elements
-  const findInput = document.getElementById('findInput');
-  const replaceInput = document.getElementById('replaceInput');
-  const findBtn = document.getElementById('findBtn');
-  const replaceBtn = document.getElementById('replaceBtn');
-  const replaceAllBtn = document.getElementById('replaceAllBtn');
-  let lastSearchIndex = 0; // To keep track of the last found position
-
   function updateGutter(){
     const lines = codeEl.value.split('\n').length;
-    let out = '';
-    for(let i=1; i<=lines; i++){
-      out += (i < 10 ? '0' + i : i) + '\n';
-    }
-    gutter.textContent = out;
+    gutter.textContent = Array.from({ length: lines }, (_, i) => (i + 1).toString().padStart(2, '0')).join('\n');
     gutter.scrollTop = codeEl.scrollTop;
   }
 
   function updatePreview(){
     const html = codeEl.value;
-    // Basic check for HTML content to avoid rendering non-html in preview
-    const isHtml = (extensionSelect.value === '.html' || /<[a-z][\s\S]*>/i.test(html));
-    if (!isHtml) {
-        preview.src = 'about:blank';
-        return;
-    }
-    const blob = new Blob([html], {type:'text/html'});
-    const url = URL.createObjectURL(blob);
-    preview.src = url;
-    preview.onload = ()=>setTimeout(()=>URL.revokeObjectURL(url),5000);
+    const isHtml = (document.getElementById('file-extension').value === '.html' || /<[a-z][\s\S]*>/i.test(html));
+    preview.src = isHtml ? URL.createObjectURL(new Blob([html], {type:'text/html'})) : 'about:blank';
   }
 
-  // --- EVENT LISTENERS ---
-
+  // --- Event Listeners ---
   codeEl.addEventListener('input', updateGutter);
   codeEl.addEventListener('scroll', ()=>{ gutter.scrollTop = codeEl.scrollTop });
 
-  // Reset search if find term changes
-  findInput.addEventListener('input', () => {
-    lastSearchIndex = 0;
-  });
-
-  // --- IMPORT LOGIC ---
-  importBtn.onclick = () => {
-    fileInput.click();
+  // --- MODIFICA CHIAVE ---
+  // La funzione del pulsante "Incolla" ora svuota prima l'editor.
+  document.getElementById('pasteBtn').onclick = async () => {
+    try {
+      const text = await navigator.clipboard.readText();
+      codeEl.value = text; // Sostituisce direttamente il contenuto
+      updateGutter();
+      updatePreview();
+    } catch (err) {
+      console.error('Impossibile incollare dagli appunti:', err);
+      alert('Non è stato possibile incollare il testo.');
+    }
   };
 
-  fileInput.onchange = (event) => {
+  // --- Altri Pulsanti ---
+  document.getElementById('importBtn').onclick = () => document.getElementById('fileInput').click();
+  
+  document.getElementById('fileInput').onchange = (event) => {
     const file = event.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        codeEl.value = e.target.result;
-        updateGutter();
-        updatePreview();
-      };
-      reader.readAsText(file);
-    }
-    // Reset file input to allow importing the same file again
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      codeEl.value = e.target.result;
+      updateGutter();
+      updatePreview();
+    };
+    reader.readAsText(file);
     event.target.value = null;
   };
+
+  document.getElementById('copyBtn').onclick = () => navigator.clipboard.writeText(codeEl.value);
+
+  document.getElementById('clearBtn').onclick = () => {
+    codeEl.value = '';
+    updateGutter();
+    updatePreview();
+  };
   
-  // --- SEARCH AND REPLACE LOGIC ---
-  findBtn.onclick = () => {
-    const searchTerm = findInput.value;
+  // (Il resto dello script per ricerca, download, etc. rimane invariato)
+
+  document.getElementById('findInput').addEventListener('input', () => { lastSearchIndex = 0; });
+  let lastSearchIndex = 0;
+
+  document.getElementById('findBtn').onclick = () => {
+    const searchTerm = document.getElementById('findInput').value;
     if (!searchTerm) return;
-
     const body = codeEl.value;
-    const startIndex = body.indexOf(searchTerm, lastSearchIndex);
-
+    let startIndex = body.indexOf(searchTerm, lastSearchIndex);
+    if (startIndex === -1) {
+      lastSearchIndex = 0;
+      startIndex = body.indexOf(searchTerm, lastSearchIndex);
+    }
     if (startIndex !== -1) {
       codeEl.focus();
       codeEl.setSelectionRange(startIndex, startIndex + searchTerm.length);
       lastSearchIndex = startIndex + 1;
     } else {
-      // If not found, wrap around and search from the beginning
-      lastSearchIndex = 0;
-      const wrapIndex = body.indexOf(searchTerm, lastSearchIndex);
-      if (wrapIndex !== -1) {
-        codeEl.focus();
-        codeEl.setSelectionRange(wrapIndex, wrapIndex + searchTerm.length);
-        lastSearchIndex = wrapIndex + 1;
-      } else {
-        // Not found anywhere
-        alert("Testo non trovato.");
-      }
+      alert("Testo non trovato.");
     }
   };
 
-  replaceBtn.onclick = () => {
-    const searchTerm = findInput.value;
-    const replaceTerm = replaceInput.value;
+  document.getElementById('replaceBtn').onclick = () => {
+    const searchTerm = document.getElementById('findInput').value;
+    const replaceTerm = document.getElementById('replaceInput').value;
     if (!searchTerm) return;
-
     const start = codeEl.selectionStart;
     const end = codeEl.selectionEnd;
-    
-    // Check if the selected text matches the search term
     if (codeEl.value.substring(start, end) === searchTerm) {
-      const before = codeEl.value.substring(0, start);
-      const after = codeEl.value.substring(end);
-      codeEl.value = before + replaceTerm + after;
-      
-      // Update selection and prepare for next find
-      codeEl.focus();
-      codeEl.setSelectionRange(start, start + replaceTerm.length);
+      codeEl.setRangeText(replaceTerm, start, end, 'end');
       lastSearchIndex = start + replaceTerm.length;
       updateGutter();
     }
-    
-    // Find the next occurrence regardless of whether a replacement was made
-    findBtn.onclick();
+    document.getElementById('findBtn').onclick();
   };
 
-  replaceAllBtn.onclick = () => {
-    const searchTerm = findInput.value;
-    const replaceTerm = replaceInput.value;
+  document.getElementById('replaceAllBtn').onclick = () => {
+    const searchTerm = document.getElementById('findInput').value;
+    const replaceTerm = document.getElementById('replaceInput').value;
     if (!searchTerm) return;
-    
     codeEl.value = codeEl.value.replaceAll(searchTerm, replaceTerm);
     updateGutter();
     updatePreview();
   };
 
-  // --- ORIGINAL BUTTON LOGIC ---
-
   document.getElementById('downloadBtn').onclick=()=>{
     const baseName = (document.getElementById('filename').value.trim() || 'file');
-    let extension = extensionSelect.value;
-
+    let extension = document.getElementById('file-extension').value;
     if (extension === 'custom') {
-      extension = customExtensionInput.value.trim();
-      if (!extension) {
-        extension = '.txt'; 
-      } else if (extension.charAt(0) !== '.') {
-        extension = '.' + extension; 
-      }
+      extension = document.getElementById('custom-extension').value.trim();
+      if (extension && extension.charAt(0) !== '.') extension = '.' + extension; 
     }
-    
-    const finalFilename = baseName + extension;
-    const blob = new Blob([codeEl.value], {type:'text/plain'});
+    const finalFilename = baseName + (extension || '.txt');
+    const blob = new Blob([codeEl.value], {type:'text/plain;charset=utf-8'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = finalFilename;
@@ -316,34 +289,18 @@
     URL.revokeObjectURL(a.href);
   }
 
-  extensionSelect.addEventListener('change', () => {
-    if (extensionSelect.value === 'custom') {
-      customExtensionInput.style.display = 'inline-block';
-      customExtensionInput.focus();
-    } else {
-      customExtensionInput.style.display = 'none';
-    }
+  document.getElementById('file-extension').addEventListener('change', (e) => {
+    document.getElementById('custom-extension').style.display = (e.target.value === 'custom') ? 'inline-block' : 'none';
   });
-
-  document.getElementById('copyBtn').onclick=()=>{
-    navigator.clipboard.writeText(codeEl.value);
-  }
-
-  document.getElementById('clearBtn').onclick=()=>{
-    codeEl.value='';
-    updateGutter();
-  }
 
   document.getElementById('refreshBtn').onclick=()=>updatePreview();
 
   document.getElementById('openNewBtn').onclick=()=>{
-    const html=codeEl.value;
-    const blob=new Blob([html],{type:'text/html'});
-    const url=URL.createObjectURL(blob);
-    window.open(url,'_blank');
+    const blob=new Blob([codeEl.value],{type:'text/html'});
+    window.open(URL.createObjectURL(blob),'_blank');
   }
 
-  // Initial content
+  // Contenuto iniziale
   const starter = `<!doctype html>
 <html>
 <head>
