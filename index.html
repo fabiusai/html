@@ -148,7 +148,7 @@
             </select>
             <input type="text" id="custom-extension" placeholder=".ext" style="display:none;">
           </div>
-          <button id="downloadBtn" class="btn btn-blue">Scarica</button>
+          <button id="downloadBtn" class="btn btn-blue">Salva con nome</button>
         </div>
       </div>
     </main>
@@ -227,7 +227,7 @@
     updatePreview();
   };
   
-  // (Il resto dello script per ricerca, download, etc. rimane invariato)
+  // (Il resto dello script per ricerca, etc. rimane invariato)
 
   document.getElementById('findInput').addEventListener('input', () => { lastSearchIndex = 0; });
   let lastSearchIndex = 0;
@@ -273,21 +273,49 @@
     updatePreview();
   };
 
-  document.getElementById('downloadBtn').onclick=()=>{
+  // --- MODIFICA 2: Logica "Salva con nome" ---
+  document.getElementById('downloadBtn').onclick = async () => {
     const baseName = (document.getElementById('filename').value.trim() || 'file');
     let extension = document.getElementById('file-extension').value;
     if (extension === 'custom') {
       extension = document.getElementById('custom-extension').value.trim();
-      if (extension && extension.charAt(0) !== '.') extension = '.' + extension; 
+      if (extension && extension.charAt(0) !== '.') extension = '.' + extension;
     }
     const finalFilename = baseName + (extension || '.txt');
-    const blob = new Blob([codeEl.value], {type:'text/plain;charset=utf-8'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = finalFilename;
-    a.click();
-    URL.revokeObjectURL(a.href);
-  }
+    const blob = new Blob([codeEl.value], { type: 'text/plain;charset=utf-8' });
+
+    // Usa l'API "File System Access" per un vero "Salva con nome", se supportata
+    if (window.showSaveFilePicker) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: finalFilename,
+          types: [{
+            description: 'File di Testo',
+            accept: { 'text/plain': [extension] },
+          }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(blob);
+        await writable.close();
+      } catch (err) {
+        // L'utente potrebbe aver annullato la finestra di dialogo, in tal caso non mostriamo errori.
+        if (err.name !== 'AbortError') {
+          console.error("Errore nel salvataggio del file:", err);
+          alert("Impossibile salvare il file.");
+        }
+      }
+    } else {
+      // Fallback per browser meno recenti che non supportano l'API
+      console.warn("API File System Access non supportata, uso il metodo di download classico.");
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = finalFilename;
+      document.body.appendChild(a); // Necessario per la massima compatibilità
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(a.href);
+    }
+  };
 
   document.getElementById('file-extension').addEventListener('change', (e) => {
     document.getElementById('custom-extension').style.display = (e.target.value === 'custom') ? 'inline-block' : 'none';
