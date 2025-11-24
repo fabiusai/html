@@ -3,22 +3,25 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>HTML Playground</title>
-  <link rel="icon" href="favicon.ico">
+  <title>HTML Playground Pro</title>
+  
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/neo.min.css">
+  
   <style>
     :root{
       --brand-blue: #0146bc;
       --brand-yellow: #eddc01;
       --brand-blue-dark: #00338a;
-      --brand-yellow-dark: #d4c500;
       --bg: #f5f5f5;
       --card: #ffffff;
       --text-dark: #222222;
       --text-light: #5f6f81;
       --border-color: #e0e0e0;
       --radius: 8px;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, "Roboto Mono", "Courier New", monospace;
-      --ui-font: Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      /* Font Coding più leggibile */
+      --mono: "Fira Code", "JetBrains Mono", Consolas, monospace;
+      --ui-font: Inter, system-ui, -apple-system, sans-serif;
     }
 
     *{box-sizing:border-box}
@@ -28,886 +31,626 @@
       background: var(--bg);
       margin: 0;
       padding: 20px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
     }
 
-    .app{
-      max-width: 1200px;
-      margin: 0 auto;
-      display: grid;
-      grid-template-columns: 1fr 420px;
-      gap: 24px;
-    }
-
-    header{
-      grid-column: 1/-1;
+    .app-header{
       display: flex;
       align-items: center;
       gap: 16px;
-      margin-bottom: 6px;
+      margin-bottom: 16px;
       background: var(--card);
-      padding: 16px;
+      padding: 12px 16px;
       border-radius: var(--radius);
       border: 1px solid var(--border-color);
+      flex-shrink: 0;
     }
     .logo{
-      width: 48px;
-      height: 48px;
+      width: 40px;
+      height: 40px;
       border-radius: var(--radius);
       display: flex;
       align-items: center;
       justify-content: center;
       background: var(--brand-yellow);
     }
-    .logo-icon { width: 28px; height: 28px; fill: var(--brand-blue); }
-    h1{font-size: 20px; margin: 0; color: var(--brand-blue);}
-    p.lead{margin: 0; color: var(--text-light); font-size: 13px;}
+    .logo-icon { width: 24px; height: 24px; fill: var(--brand-blue); }
+    h1{font-size: 18px; margin: 0; color: var(--brand-blue);}
+    p.lead{margin: 0; color: var(--text-light); font-size: 12px;}
 
-    .pane{
+    /* Layout Principale Resizable */
+    .workspace {
+      display: flex;
+      flex: 1;
+      gap: 0; /* Gestito dal resizer */
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    /* Colonna Sinistra: Editor */
+    .pane-editor {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
       background: var(--card);
       border-radius: var(--radius);
-      padding: 18px;
       border: 1px solid var(--border-color);
+      min-width: 300px;
+      padding: 10px;
     }
-    .editor-pane{height: 580px; display: flex; flex-direction: column;}
 
-    .section-title{
+    /* Resizer Handle */
+    .resizer {
+      width: 12px;
+      cursor: col-resize;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .resizer:hover, .resizer.active { background: rgba(1, 70, 188, 0.1); }
+    .resizer::after {
+      content: "";
+      width: 4px;
+      height: 40px;
+      background: var(--border-color);
+      border-radius: 2px;
+    }
+
+    /* Colonna Destra: Anteprima + Console */
+    .pane-preview {
+      width: 45%; /* Default start width */
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 300px;
+    }
+
+    .preview-container {
+      flex: 2; /* Occupa più spazio della console */
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      overflow: hidden;
+    }
+
+    .console-container {
+      flex: 1;
+      background: #1e1e1e; /* Dark theme per console */
+      border-radius: var(--radius);
+      border: 1px solid var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .section-header {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      margin-bottom: 12px;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
       border-bottom: 1px solid var(--border-color);
-      padding-bottom: 10px;
+      flex-shrink: 0;
     }
-    .section-title h2{font-size: 16px; margin: 0; color: var(--brand-blue);}
-    .section-title small{color: var(--text-light); font-size: 12px;}
+    .console-container .section-header {
+      padding: 8px 10px;
+      border-bottom: 1px solid #333;
+      background: #252526;
+      margin-bottom: 0;
+    }
+    .section-title h2{font-size: 14px; margin: 0; color: var(--brand-blue); display: flex; align-items: center; gap: 6px;}
+    .console-container h2 { color: #ccc; }
 
-    .editor-wrap{display: flex; border-radius: 6px; overflow: hidden; border: 1px solid var(--border-color); flex-grow: 1;}
-    .gutter{background: #f8f9fa; padding: 12px 8px; font-family: var(--mono); font-size: 13px; color: #868e96; line-height: 20px; min-width: 44px; text-align: right; user-select: none; overflow: hidden; white-space: pre; border-right: 1px solid var(--border-color);}
-    .codearea{flex: 1; overflow: hidden;}
-    textarea.code{width: 100%; height: 100%; padding: 12px 14px; border: 0; resize: none; outline: none; font-family: var(--mono); font-size: 13px; line-height: 20px; background: transparent; color: var(--text-dark); overflow: auto; white-space: pre;}
-
-    input[type='text'], select {
-      padding: 10px;
-      border-radius: var(--radius);
+    /* CodeMirror Customization */
+    .CodeMirror {
+      height: 100%;
+      font-family: var(--mono);
+      font-size: 13px;
       border: 1px solid var(--border-color);
-      font-size: 14px;
-      font-family: var(--ui-font);
-      background: #fdfdfd;
-      color: var(--text-dark);
+      border-radius: 4px;
+      flex-grow: 1;
     }
-    input[type='text']:focus, select:focus {
-      outline: none;
-      border-color: var(--brand-blue);
-      box-shadow: 0 0 0 2px rgba(1, 70, 188, 0.2);
-    }
+    .cm-s-neo.CodeMirror { background: #fff; color: #222; }
 
-    .search-controls {
-      display: flex;
-      gap: 8px;
-      margin-top: 12px;
-      flex-wrap: wrap;
-    }
-    .search-controls input[type='text'] { flex-grow: 1; }
-    .search-controls .btn { flex-shrink: 0; }
-     
-    .btn{
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      padding: 10px 14px;
-      border-radius: var(--radius);
-      border: 0;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 14px;
-      position: relative;
-      overflow: hidden;
-      transition: filter 0.2s ease;
-      -webkit-font-smoothing: antialiased;
-    }
-    .btn:hover:not(:disabled) { filter: brightness(0.9); }
-    .btn:active:not(:disabled) { filter: brightness(0.8); }
-    .btn:disabled { opacity: 0.6; cursor: not-allowed; filter: none; }
+    /* Preview Iframe */
+    .iframe-wrap { flex: 1; border: 1px solid var(--border-color); border-radius: 4px; background: #fff; position: relative;}
+    iframe { width: 100%; height: 100%; border: 0; display: block; }
     
+    /* Console Output Styles */
+    #console-output {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: #ddd;
+    }
+    .log-entry { border-bottom: 1px solid #333; padding: 4px 0; white-space: pre-wrap; word-break: break-all; }
+    .log-log { color: #ddd; }
+    .log-warn { color: #eddc01; }
+    .log-error { color: #ff6b6b; }
+    .log-info { color: #61afef; }
+
+    /* Controls */
+    .search-controls { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+    .search-controls input { flex-grow: 1; padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px;}
+    
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    
+    /* Buttons */
+    .btn{
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 8px 12px; border-radius: 4px; border: 0; cursor: pointer;
+      font-weight: 600; font-size: 13px; transition: filter 0.2s;
+      position: relative; overflow: hidden; white-space: nowrap;
+    }
+    .btn:hover { filter: brightness(0.95); }
     .btn-blue{background: var(--brand-blue); color: white;}
     .btn-yellow{background: var(--brand-yellow); color: var(--brand-blue-dark);}
     .btn-ghost{background: transparent; border: 1px solid var(--border-color); color: var(--brand-blue);}
-    .btn-ghost:hover:not(:disabled) { background: #f8f9fa; }
+    .btn-tiny { padding: 4px 8px; font-size: 11px; height: 24px; }
+    .btn-dark { background: #333; color: #fff; border: 1px solid #444; }
+    .btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+    .btn .feedback {
+      position: absolute; inset: 0; background: inherit; display: flex; 
+      align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .btn.loading .feedback { opacity: 1; }
+    .btn.loading span:first-child { opacity: 0; }
+
+    /* File Inputs */
+    .file-group { display: flex; gap: 4px; align-items: center; background: #fff; border: 1px solid var(--border-color); border-radius: 4px; padding: 2px; }
+    .file-group input, .file-group select { border: none; font-size: 12px; padding: 4px; outline: none; background: transparent; }
     
-    .btn svg { width: 16px; height: 16px; }
-    .btn-blue svg { fill: white; }
-    .btn-yellow svg { fill: var(--brand-blue-dark); }
-    .btn-ghost svg { fill: var(--brand-blue); }
-
-    .btn span:first-of-type { /* Testo Originale */
-      transition: opacity 0.15s ease-out;
-      opacity: 1;
-    }
-    .btn .feedback { /* Testo Feedback */
-      position: absolute;
-      inset: 0;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      opacity: 0;
-      transition: opacity 0.15s ease-in;
-      pointer-events: none;
-      font-size: 13px;
-    }
-    .btn.loading span:first-of-type { opacity: 0; }
-    .btn.loading .feedback { opacity: 1; pointer-events: auto; }
-
-    .file-controls { display: flex; gap: 6px; align-items: center; }
-    .file-controls input[type='text']#filename { min-width: 160px; }
-    .file-controls input[type='text']#custom-extension { width: 80px; }
-    
-    .main-controls {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 16px;
-      margin-top: 12px;
-    }
-    .control-group {
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      flex-wrap: wrap;
-    }
-
-    .preview-pane{min-height: 520px; display: flex; flex-direction: column;}
-    .preview-frame{flex: 1; border: 1px solid var(--border-color); border-radius: 6px; overflow: hidden;}
-    iframe.preview{width: 100%; height: 100%; border: 0; background: #fff;}
-
-    footer{
-      grid-column: 1/-1;
-      margin-top: 10px;
-      color: var(--text-light);
-      font-size: 13px;
-      padding: 18px;
-      border: 1px solid var(--border-color);
-      border-radius: var(--radius);
-      background: var(--card);
-    }
-
-    @media (max-width: 980px){
-      .app{grid-template-columns: 1fr;}
-      .preview-pane{order: 2}
-      .main-controls { flex-direction: column; align-items: stretch; }
-      .control-group { justify-content: flex-start; }
-    }
-    @media (max-width: 600px) {
-      body { padding: 10px; }
-      .app { gap: 16px; }
-      header { flex-direction: column; align-items: flex-start; }
-    }
-
-    /* --- STILI MODALE AGGIUNTI --- */
+    /* Modal */
     .modal-overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(15, 23, 42, 0.5);
-      backdrop-filter: blur(4px);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 16px;
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
+      display: none; align-items: center; justify-content: center; z-index: 999;
     }
     .modal-content {
-      background: var(--card);
-      border-radius: var(--radius);
-      padding: 24px;
-      border: 1px solid var(--border-color);
-      width: 100%;
-      max-width: 800px;
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
+      background: var(--card); padding: 20px; border-radius: var(--radius); width: 600px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 12px;
     }
-    .modal-content h3 { margin: 0; font-size: 18px; color: var(--brand-blue); }
-    .modal-field { display: flex; flex-direction: column; gap: 8px; }
-    .modal-field label { font-size: 13px; font-weight: 600; color: var(--brand-blue); }
-    .modal-field textarea {
-      min-height: 150px;
-      resize: vertical;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
-      padding: 10px;
-      font-family: var(--mono);
-      font-size: 13px;
+    textarea.patch-area {
+      width: 100%; min-height: 100px; border: 1px solid var(--border-color);
+      border-radius: 4px; padding: 8px; font-family: var(--mono); font-size: 12px; resize: vertical;
     }
-    .modal-field textarea:focus {
-      outline: none;
-      border-color: var(--brand-blue);
-      box-shadow: 0 0 0 2px rgba(1, 70, 188, 0.2);
-    }
-    .modal-actions { display: flex; gap: 10px; justify-content: flex-end; }
-    .modal-label-group {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-    .btn-tiny-paste {
-      background: transparent;
-      border: 1px solid var(--border-color);
-      color: var(--brand-blue);
-      padding: 2px 8px;
-      font-size: 11px;
-      border-radius: 6px;
-      font-weight: 500;
-      cursor: pointer;
-    }
-    .btn-tiny-paste:hover { background: #f8f9fa; }
+    label { font-weight: 600; font-size: 12px; color: var(--brand-blue); display: block; margin-bottom: 4px; }
 
-    /* --- Stili per Tab --- */
-    .tab-nav {
-      display: flex;
-      border-bottom: 1px solid var(--border-color);
-      margin-bottom: 16px;
-    }
-    .tab-nav-btn {
-      padding: 10px 16px;
-      cursor: pointer;
-      border: none;
-      background: transparent;
-      font-size: 14px;
-      font-weight: 600;
-      color: var(--text-light);
-      border-bottom: 2px solid transparent;
-      margin-bottom: -1px; /* Sovrappone il bordo inferiore */
-    }
-    .tab-nav-btn:hover {
-      color: var(--text-dark);
-    }
-    .tab-nav-btn.active {
-      color: var(--brand-blue);
-      border-bottom-color: var(--brand-blue);
-    }
-    .tab-panel {
-      display: none; /* Nascosto di default */
-      flex-direction: column;
-      gap: 16px;
-    }
-    .tab-panel.active {
-      display: flex; /* Visibile quando attivo */
+    @media (max-width: 800px) {
+      .workspace { flex-direction: column; overflow: auto; }
+      .resizer { display: none; }
+      .pane-preview { width: 100%; height: 500px; }
+      .pane-editor { min-height: 400px; }
     }
   </style>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
 </head>
 <body>
-  <div class="app">
-    <header>
-      <div class="logo" aria-hidden="true">
-        <svg class="logo-icon" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor"><path d="M11.24 2.37l-5.41 2.31L11.24 9.1v12.52l-7.6-3.26C3.25 18.15 3 17.8 3 17.41V6.13c0-.39.25-.74.64-.94l7.6-3.26c.26-.11.55-.11.8 0zM12.76 2.37l7.6 3.26c.39.2.64.55.64.94v11.28c0 .39-.25.74-.64.94l-7.6 3.26c-.26.11-.55-.11-.8 0V9.1l5.41-4.42-5.41-2.31z"></path></svg>
-      </div>
-      <div>
-        <h1>Editor di Codice</h1>
-        <p class="lead">Incolla, importa e modifica. Cerca, sostituisci e scarica.</p>
-      </div>
-    </header>
 
-    <main class="pane editor-pane">
-      <div class="section-title">
-        <h2>
-          <svg viewBox="0 0 20 20" fill="currentColor" style="width:18px;height:18px;margin-right:6px;fill:var(--brand-blue);opacity:0.8;"><path fill-rule="evenodd" d="M6.6 5.6a.4.4 0 000 .8L8.75 8 6.6 9.6a.4.4 0 000 .8l.8 0a.4.4 0 00.31-.15L10 8.85l2.29 2.4a.4.4 0 00.31.15l.8 0a.4.4 0 000-.8L11.25 8l2.15-1.6a.4.4 0 000-.8l-.8 0a.4.4 0 00-.31.15L10 7.15 7.71 4.75a.4.4 0 00-.31-.15l-.8 0z" clip-rule="evenodd"></path></svg>
-          Editor
-        </h2>
-        <small>Incolla o importa il tuo codice</small>
+  <header class="app-header">
+    <div class="logo"><svg class="logo-icon" viewBox="0 0 24 24"><path d="M11.24 2.37l-5.41 2.31L11.24 9.1v12.52l-7.6-3.26C3.25 18.15 3 17.8 3 17.41V6.13c0-.39.25-.74.64-.94l7.6-3.26c.26-.11.55-.11.8 0zM12.76 2.37l7.6 3.26c.39.2.64.55.64.94v11.28c0 .39-.25.74-.64.94l-7.6 3.26c-.26.11-.55-.11-.8 0V9.1l5.41-4.42-5.41-2.31z"></path></svg></div>
+    <div>
+      <h1>Editor HTML Pro</h1>
+      <p class="lead">Editor con Auto-save, Live Preview e Debug Console.</p>
+    </div>
+  </header>
+
+  <div class="workspace" id="workspace">
+    
+    <div class="pane-editor" id="paneEditor">
+      <div class="section-header">
+        <div class="section-title"><h2><svg viewBox="0 0 20 20"><path fill="currentColor" d="M12.3 3.7l4 4L4 20H0v-4L12.3 3.7zm1.4-1.4L16 0l4 4L17.7 4.6 13.7 2.3z"/></svg> Codice Sorgente</h2></div>
+        <div style="font-size: 11px; color: var(--text-light);" id="saveStatus">Salvato</div>
       </div>
-      <div class="editor-wrap">
-        <div class="gutter" id="gutter">01</div>
-        <div class="codearea"><textarea id="code" class="code" spellcheck="false"></textarea></div>
-      </div>
-      
+
       <div class="search-controls">
         <input type="text" id="findInput" placeholder="Cerca...">
-        <button id="findBtn" class="btn btn-ghost">
-          <span>Trova</span>
-          <span class="feedback"></span>
-        </button>
-        <input type="text" id="replaceInput" placeholder="Sostituisci con...">
-        <button id="replaceBtn" class="btn btn-ghost">
-          <span>Sostituisci</span>
-          <span class="feedback"></span>
-        </button>
-        <button id="replaceAllBtn" class="btn btn-ghost">
-          <span>Tutti</span>
-          <span class="feedback"></span>
-        </button>
+        <button id="findBtn" class="btn btn-tiny btn-ghost">Trova</button>
+        <input type="text" id="replaceInput" placeholder="Sostituisci...">
+        <button id="replaceBtn" class="btn btn-tiny btn-ghost">Sostituisci</button>
+        <button id="replaceAllBtn" class="btn btn-tiny btn-ghost">Tutti</button>
       </div>
 
-      <div class="main-controls">
-        <div class="control-group">
-          <button id="copyBtn" class="btn btn-yellow">
-            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M7 3a1 1 0 011-1h6a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6 6A1 1 0 018 11.586V10H6a1 1 0 01-1-1V3z"></path><path d="M4 6a1 1 0 01-1-1V3a1 1 0 011-1h1a1 1 0 011 1v2h1.5a.5.5 0 01.5.5V10a1 1 0 01-1 1H6v1.5a.5.5 0 01-.5.5H3.5a.5.5 0 01-.5-.5V8a1 1 0 011-1h1V6z"></path></svg>
-            <span>Copia</span>
-            <span class="feedback"></span>
-          </button>
-          <button id="pasteBtn" class="btn btn-ghost">
-            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M5.5 3A2.5 2.5 0 003 5.5v2.75A.75.75 0 004.5 9h2A.75.75 0 007.25 8.25V5.5A2.5 2.5 0 005.5 3zM14.5 3A2.5 2.5 0 0012 5.5v2.75A.75.75 0 0013.5 9h2A.75.75 0 0016.25 8.25V5.5A2.5 2.5 0 0014.5 3zM5.5 12A2.5 2.5 0 003 14.5v2.75A.75.75 0 004.5 18h2A.75.75 0 007.25 17.25V14.5A2.5 2.5 0 005.5 12z"></path><path d="M12.25 14.5a2.5 2.5 0 012.25-2.25A2.5 2.5 0 0117 14.5v2.75a.75.75 0 01-1.5 0V14.5a1 1 0 00-1-1 1 1 0 00-1 1v2.75a.75.75 0 01-1.5 0V14.5z"></path></svg>
-            <span>Incolla</span>
-            <span class="feedback"></span>
-          </button>
-          <button id="clearBtn" class="btn btn-ghost">
-            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clip-rule="evenodd"></path></svg>
-            <span>Svuota</span>
-            <span class="feedback"></span>
-          </button>
-          <button id="blockReplaceBtn" class="btn btn-ghost">
-            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M15.312 11.312a.75.75 0 010 1.061l-3 3a.75.75 0 01-1.06 0l-3-3a.75.75 0 111.06-1.06l1.72 1.72V7.75a.75.75 0 011.5 0v5.281l1.72-1.72a.75.75 0 011.06 0zM4.688 8.688a.75.75 0 010-1.061l3-3a.75.75 0 011.06 0l3 3a.75.75 0 11-1.06 1.06l-1.72-1.72v5.281a.75.75 0 01-1.5 0V6.939L5.75 8.688a.75.75 0 01-1.06 0z" clip-rule="evenodd"></path></svg>
-            <span>Patch</span>
-            <span class="feedback"></span>
-          </button>
+      <textarea id="code" name="code"></textarea>
+
+      <div class="toolbar">
+        <button id="copyBtn" class="btn btn-yellow"><span>Copia</span><span class="feedback"></span></button>
+        <button id="pasteBtn" class="btn btn-ghost"><span>Incolla</span><span class="feedback"></span></button>
+        <button id="clearBtn" class="btn btn-ghost"><span>Pulisci</span><span class="feedback"></span></button>
+        <button id="patchBtn" class="btn btn-ghost"><span>Patch</span><span class="feedback"></span></button>
+        
+        <div style="flex-grow:1"></div>
+        
+        <div class="file-group">
+          <input type="text" id="filename" value="progetto" placeholder="Nome file" style="width:80px">
+          <select id="fileExtension"><option value=".html">.html</option><option value=".txt">.txt</option></select>
         </div>
-        <div class="control-group">
-          <button id="importBtn" class="btn btn-blue">
-            <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M10.75 2.75a.75.75 0 00-1.5 0v8.614L6.28 8.42a.75.75 0 10-1.06 1.06l4.25 4.25a.75.75 0 001.06 0l4.25-4.25a.75.75 0 10-1.06-1.06l-2.97 2.97V2.75z" clip-rule="evenodd"></path><path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5a1.25 1.25 0 01-1.25 1.25H4.75A1.25 1.25 0 013.5 15.25v-2.5z"></path></svg>
-            <span>Importa</span>
-            <span class="feedback"></span>
-          </button>
-          <div class="file-controls">
-            <input type="text" id="filename" placeholder="Nome file" value="pagina">
-            <select id="file-extension" aria-label="Seleziona estensione file">
-              <option value=".html" selected>.html</option>
-              <option value=".css">.css</option>
-              <option value=".js">.js</option>
-              <option value=".json">.json</option>
-              <option value=".py">.py</option>
-              <option value=".sh">.sh</option>
-              <option value=".xml">.xml</option>
-              <option value=".svg">.svg</option>
-              <option value=".txt">.txt</option>
-              <option value="">Nessuna estensione</option>
-              <option value="custom">Altro...</option>
-            </select>
-            <input type="text" id="custom-extension" placeholder=".ext" style="display:none;">
+        <button id="downloadBtn" class="btn btn-blue"><span>Salva File</span><span class="feedback"></span></button>
+        <input type="file" id="fileInput" style="display:none">
+        <button id="importBtn" class="btn btn-ghost"><span>Importa</span></button>
+      </div>
+    </div>
+
+    <div class="resizer" id="resizer"></div>
+
+    <div class="pane-preview" id="panePreview">
+      
+      <div class="preview-container">
+        <div class="section-header">
+          <div class="section-title"><h2><svg viewBox="0 0 20 20"><path fill="currentColor" d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg> Anteprima Live</h2></div>
+          <div style="display:flex; gap:6px">
+            <button id="refreshBtn" class="btn btn-tiny btn-ghost">Ricarica</button>
+            <button id="newTabBtn" class="btn btn-tiny btn-ghost">Nuova Tab</button>
           </div>
-          <button id="downloadBtn" class="btn btn-blue">
-            <svg viewBox="0 0 20 20" fill="currentColor"><path d="M3.5 12.75a.75.75 0 00-1.5 0v2.5A2.75 2.75 0 004.75 18h10.5A2.75 2.75 0 0018 15.25v-2.5a.75.75 0 00-1.5 0v2.5a1.25 1.25 0 01-1.25 1.25H4.75A1.25 1.25 0 013.5 15.25v-2.5z"></path><path d="M10 2.75a.75.75 0 01.75.75v8.614l2.97-2.97a.75.75 0 011.06 1.06l-4.25 4.25a.75.75 0 01-1.06 0L5.22 9.61a.75.75 0 111.06-1.06l2.97 2.97V3.5a.75.75 0 01.75-.75z"></path></svg>
-            <span>Salva</span>
-            <span class="feedback"></span>
-          </button>
+        </div>
+        <div class="iframe-wrap">
+          <iframe id="preview" sandbox="allow-scripts allow-modals allow-forms allow-popups allow-same-origin"></iframe>
         </div>
       </div>
-    </main>
 
-    <aside class="pane preview-pane">
-      <div class="section-title">
-        <h2>
-          <svg viewBox="0 0 20 20" fill="currentColor" style="width:18px;height:18px;margin-right:6px;fill:var(--brand-blue);opacity:0.8;"><path fill-rule="evenodd" d="M10 3a.75.75 0 01.75.75v1.5h1.5a.75.75 0 010 1.5h-1.5v1.5a.75.75 0 01-1.5 0v-1.5h-1.5a.75.75 0 010-1.5h1.5v-1.5A.75.75 0 0110 3zM8.5 6a4.5 4.5 0 11-8.636 1.342.75.75 0 111.238-.834A3 3 0 108.5 6zM10 5a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 5zM10 8.5a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 8.5zM11.5 6a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 0111.5 6zM14 8.5a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0114 8.5zM11.5 11a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5a.75.75 0 01-.75-.75zM10 12.5a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 0110 12.5zM8.5 11a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 018.5 11zM7 12.5a.75.75 0 01.75.75v1.5a.75.75 0 01-1.5 0v-1.5A.75.75 0 017 12.5zM8.5 15a.75.75 0 01.75-.75h1.5a.75.75 0 010 1.5h-1.5A.75.75 0 018.5 15z"></path></svg>
-          Anteprima
-        </h2>
+      <div class="console-container">
+        <div class="section-header">
+          <div class="section-title"><h2><svg viewBox="0 0 20 20" style="fill:#ccc"><path d="M0 0h24v24H0z" fill="none"/><path d="M20 19V7H4v12h16zM4 5h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V7c0-1.1.9-2 2-2zm0-2h16V2H4v1z"/></svg> Console JS</h2></div>
+          <button id="clearConsoleBtn" class="btn btn-tiny btn-dark">Pulisci</button>
+        </div>
+        <div id="console-output">
+          <div style="color: #666; font-style: italic;">In attesa di log...</div>
+        </div>
       </div>
-      <div class="preview-frame"><iframe id="preview" class="preview" sandbox="allow-scripts allow-forms"></iframe></div>
-      <div style="margin-top:12px;display:flex;gap:8px">
-        <button id="refreshBtn" class="btn btn-blue" style="flex-grow: 1;">
-          <svg viewBox="0 0 20 20" fill="currentColor"><path fill-rule="evenodd" d="M15.312 5.312a.75.75 0 010 1.061l-3 3a.75.75 0 01-1.06 0l-3-3a.75.75 0 111.06-1.06l1.72 1.72V1.75a.75.75 0 011.5 0v5.281l1.72-1.72a.75.75 0 011.06 0zM4.688 14.688a.75.75 0 010-1.061l3-3a.75.75 0 011.06 0l3 3a.75.75 0 11-1.06 1.06l-1.72-1.72v5.281a.75.75 0 01-1.5 0v-5.28l-1.72 1.72a.75.75 0 01-1.06 0z" clip-rule="evenodd"></path></svg>
-          <span>Aggiorna</span>
-          <span class="feedback"></span>
-        </button>
-        <button id="openNewBtn" class="btn btn-ghost">
-          <svg viewBox="0 0 20 20" fill="currentColor"><path d="M12.232 4.232a.75.75 0 011.06 1.06l-4 4a.75.75 0 01-1.06 0l-4-4a.75.75 0 111.06-1.06l3.47 3.47 3.47-3.47z"></path><path d="M16.75 8.25a.75.75 0 010 1.5h-5.5a.75.75 0 010-1.5h5.5z"></path></svg>
-          <span>Nuova Finestra</span>
-          <span class="feedback"></span>
-        </button>
-      </div>
-    </aside>
 
-    <footer class="pane">Strumento di sviluppo rapido.</footer>
+    </div>
   </div>
 
-  <input type="file" id="fileInput" style="display: none;" accept=".html,.css,.js,.py,.sh,.xml,.svg,.txt,text/*,.json,application/json">
-
-  <div id="blockReplaceModal" class="modal-overlay" style="display:none;">
+  <div id="patchModal" class="modal-overlay">
     <div class="modal-content">
-      <h3 style="margin-bottom: 8px;">Strumenti Avanzati</h3>
+      <h3 style="margin:0; color:var(--brand-blue)">Trova e Sostituisci Blocco</h3>
+      <p class="lead">Incolla il blocco esatto da cercare e il nuovo codice da inserire.</p>
       
-      <nav class="tab-nav">
-        <button class="tab-nav-btn active" data-tab="patch">Applica Patch</button>
-        <button class="tab-nav-btn" data-tab="api">Gestione API</button>
-      </nav>
-
-      <div class="tab-content">
-        
-        <div class="tab-panel active" id="tab-patch">
-          <p style="font-size:14px; color:var(--text-light); margin-top:0;">Incolla il blocco VECCHIO da trovare e il blocco NUOVO con cui sostituirlo.</p>
-          <div class="modal-field">
-            <div class="modal-label-group">
-              <label for="patch-old-code">Blocco da Sostituire:</label>
-              <button id="pasteOldBtn" class="btn btn-tiny-paste">
-                <span>Incolla</span>
-                <span class="feedback"></span>
-              </button>
-            </div>
-            <textarea id="patch-old-code" class="code"></textarea>
-          </div>
-          <div class="modal-field">
-            <div class="modal-label-group">
-              <label for="patch-new-code">Sostituisci Con:</label>
-              <button id="pasteNewBtn" class="btn btn-tiny-paste">
-                <span>Incolla</span>
-                <span class="feedback"></span>
-              </button>
-            </div>
-            <textarea id="patch-new-code" class="code"></textarea>
-          </div>
-          <div class="modal-actions" style="justify-content: space-between; padding-top: 16px; border-top: 1px solid var(--border-color);">
-            <button id="clearBlockReplaceBtn" class="btn btn-ghost">
-              <span>Svuota Campi</span>
-              <span class="feedback"></span>
-            </button>
-            <button id="applyBlockReplaceBtn" class="btn btn-blue">
-              <span>Applica Sostituzione</span>
-              <span class="feedback"></span>
-            </button>
-          </div>
-        </div>
-        
-        <div class="tab-panel" id="tab-api">
-          <p style="font-size:14px; color:var(--text-light); margin-top:0;">Inserisci le tue chiavi API per le funzionalità future.</p>
-          <div class="modal-field">
-            <label for="api-key-input">Chiave API (es. Gemini):</label>
-            <input type="password" id="api-key-input" placeholder="Incolla la tua chiave API..." style="font-family: var(--mono); font-size: 13px;">
-          </div>
-          <div class="modal-actions" style="justify-content: flex-end; padding-top: 16px; border-top: 1px solid var(--border-color);">
-            <button id="saveApiBtn" class="btn btn-blue">
-              <span>Salva Chiave</span>
-              <span class="feedback"></span>
-            </button>
-          </div>
-        </div>
+      <div>
+        <label>Codice da trovare (Vecchio):</label>
+        <textarea id="patchOld" class="patch-area" spellcheck="false"></textarea>
       </div>
-
-      <div class="modal-actions" style="margin-top: -8px;">
-        <button id="cancelBlockReplaceBtn" class="btn btn-ghost" style="width: 100%;">
-          <span>Chiudi</span>
-          <span class="feedback"></span>
-        </button>
+      <div>
+        <label>Sostituisci con (Nuovo):</label>
+        <textarea id="patchNew" class="patch-area" spellcheck="false"></textarea>
+      </div>
+      
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px">
+        <button id="closePatchBtn" class="btn btn-ghost">Annulla</button>
+        <button id="applyPatchBtn" class="btn btn-blue">Applica Patch</button>
       </div>
     </div>
   </div>
 
 <script>
-  // --- Elementi UI ---
-  const codeEl = document.getElementById('code');
-  const gutter = document.getElementById('gutter');
-  const preview = document.getElementById('preview');
+  // --- INIZIALIZZAZIONE ---
+  let editor;
+  const STORAGE_KEY = 'html_playground_content';
   
-  // --- Funzione Helper per Feedback Bottoni ---
-  /**
-   * Mostra un feedback testuale temporaneo all'interno di un bottone.
-   * @param {HTMLElement} btn - L'elemento bottone.
-   * @param {string} text - Il messaggio di feedback da mostrare.
-   * @param {number} [timeout=1500] - Durata in ms del messaggio.
-   */
-  function showButtonFeedback(btn, text, timeout = 1500) {
-    if (!btn) return;
-    // Cerca il primo span che NON è la classe .feedback
-    const originalText = btn.querySelector('span:not(.feedback)');
-    const feedbackText = btn.querySelector('.feedback');
-    
-    if (!originalText || !feedbackText) {
-      console.warn("Struttura bottone non conforme per feedback:", btn);
-      return;
-    }
-
-    originalText.style.opacity = '0';
-    feedbackText.textContent = text;
-    feedbackText.style.opacity = '1';
-    btn.disabled = true;
-    btn.classList.add('loading');
-
-    // Gestione bottoni tiny-paste (non hanno testo originale)
-    if (btn.classList.contains('btn-tiny-paste')) {
-      originalText.style.display = 'none';
-    }
-
-    setTimeout(() => {
-      originalText.style.opacity = '1';
-      if (btn.classList.contains('btn-tiny-paste')) {
-        originalText.style.display = 'inline';
-      }
-      feedbackText.style.opacity = '0';
-      btn.disabled = false;
-      btn.classList.remove('loading');
-    }, timeout);
-  }
-
-  // --- Funzioni Principali UI ---
-  function updateGutter(){
-    const lines = codeEl.value.split('\n').length;
-    gutter.textContent = Array.from({ length: lines }, (_, i) => (i + 1).toString().padStart(2, '0')).join('\n');
-    gutter.scrollTop = codeEl.scrollTop;
-  }
-
-  function updatePreview(){
-    const html = codeEl.value;
-    const isHtml = (document.getElementById('file-extension').value === '.html' || /<[a-z][\s\S]*>/i.test(html));
-    preview.src = isHtml ? URL.createObjectURL(new Blob([html], {type:'text/html'})) : 'about:blank';
-  }
-
-  // --- Event Listeners Editor ---
-  codeEl.addEventListener('input', updateGutter);
-  codeEl.addEventListener('scroll', ()=>{ gutter.scrollTop = codeEl.scrollTop });
-
-  // --- Pulsanti Editor Principale ---
-  document.getElementById('pasteBtn').onclick = async (e) => {
-    const btn = e.currentTarget;
-    try {
-      const text = await navigator.clipboard.readText();
-      codeEl.value = text; // Sostituisce direttamente il contenuto
-      updateGutter();
-      updatePreview();
-      showButtonFeedback(btn, 'Incollato!', 1000);
-    } catch (err) {
-      console.error('Impossibile incollare dagli appunti:', err);
-      showButtonFeedback(btn, 'Fallito', 1500);
-    }
-  };
-
-  document.getElementById('importBtn').onclick = (e) => {
-    document.getElementById('fileInput').click();
-    showButtonFeedback(e.currentTarget, 'Apro...', 1000);
-  };
-  
-  document.getElementById('fileInput').onchange = (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      codeEl.value = e.target.result;
-      updateGutter();
-      updatePreview();
-    };
-    reader.readAsText(file);
-    event.target.value = null; // Permette di ricaricare lo stesso file
-  };
-
-  document.getElementById('copyBtn').onclick = (e) => {
-    const btn = e.currentTarget;
-    if (!codeEl.value) {
-      showButtonFeedback(btn, 'Vuoto!', 1000);
-      return;
-    }
-    navigator.clipboard.writeText(codeEl.value)
-      .then(() => showButtonFeedback(btn, 'Copiato!', 1000))
-      .catch(() => showButtonFeedback(btn, 'Fallito', 1500));
-  };
-
-  document.getElementById('clearBtn').onclick = (e) => {
-    codeEl.value = '';
-    updateGutter();
-    updatePreview();
-    showButtonFeedback(e.currentTarget, 'Svuotato!', 1000);
-  };
-  
-  // --- NUOVA LOGICA MODALE SOSTITUZIONE BLOCCO ---
-  const modal = document.getElementById('blockReplaceModal');
-  const oldCodeEl = document.getElementById('patch-old-code');
-  const newCodeEl = document.getElementById('patch-new-code');
-  
-  // Selettori per Tab
-  const tabNav = modal.querySelector('.tab-nav');
-  const tabPanels = modal.querySelectorAll('.tab-panel');
-
-  const clearPatchModal = () => {
-    oldCodeEl.value = '';
-    newCodeEl.value = '';
-    const apiKeyInput = document.getElementById('api-key-input');
-    if (apiKeyInput) apiKeyInput.value = '';
-  };
-
-  document.getElementById('blockReplaceBtn').onclick = (e) => {
-    modal.style.display = 'flex';
-    // Mostra la prima tab di default
-    const patchTabBtn = tabNav.querySelector('.tab-nav-btn[data-tab="patch"]');
-    if (patchTabBtn) patchTabBtn.click();
-    oldCodeEl.focus();
-    showButtonFeedback(e.currentTarget, 'Aperto!', 1000);
-  };
-  
-  document.getElementById('cancelBlockReplaceBtn').onclick = () => {
-    modal.style.display = 'none';
-    clearPatchModal(); // Svuota i campi all'uscita
-  };
-  
-  modal.onclick = (e) => {
-    if (e.target === modal) {
-      modal.style.display = 'none';
-      clearPatchModal();
-    }
-  };
-  
-  // --- Logica Tab Switching ---
-  if (tabNav) {
-    tabNav.addEventListener('click', (e) => {
-      const targetBtn = e.target.closest('.tab-nav-btn');
-      if (!targetBtn) return;
-      
-      const tabId = targetBtn.dataset.tab;
-      
-      // Aggiorna bottoni
-      tabNav.querySelectorAll('.tab-nav-btn').forEach(btn => {
-        btn.classList.toggle('active', btn === targetBtn);
-      });
-      
-      // Aggiorna pannelli
-      tabPanels.forEach(panel => {
-        panel.classList.toggle('active', panel.id === `tab-${tabId}`);
-      });
+  window.onload = function() {
+    // Setup CodeMirror
+    editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+      mode: "htmlmixed",
+      theme: "neo",
+      lineNumbers: true,
+      lineWrapping: true,
+      viewportMargin: Infinity,
+      autofocus: true
     });
-  }
 
-  // --- Pulsanti Pannello Patch ---
-  document.getElementById('pasteOldBtn').onclick = async (e) => {
-    const btn = e.currentTarget;
-    try {
-      oldCodeEl.value = await navigator.clipboard.readText();
-      showButtonFeedback(btn, 'Incollato!', 800);
-    } catch (err) { showButtonFeedback(btn, 'Fallito', 1000); }
-  };
-  document.getElementById('pasteNewBtn').onclick = async (e) => {
-    const btn = e.currentTarget;
-    try {
-      newCodeEl.value = await navigator.clipboard.readText();
-      showButtonFeedback(btn, 'Incollato!', 800);
-    } catch (err) { showButtonFeedback(btn, 'Fallito', 1000); }
-  };
-  
-  document.getElementById('clearBlockReplaceBtn').onclick = (e) => {
-    oldCodeEl.value = '';
-    newCodeEl.value = '';
-    showButtonFeedback(e.currentTarget, 'Svuotato!', 1000);
-  };
-
-  document.getElementById('applyBlockReplaceBtn').onclick = (e) => {
-    const btn = e.currentTarget;
-    const editorText = codeEl.value;
-    const oldCode = oldCodeEl.value;
-    const newCode = newCodeEl.value;
-    
-    if (!oldCode) {
-      showButtonFeedback(btn, 'Campo VECCHIO vuoto', 2000);
-      return;
-    }
-    
-    if (!editorText.includes(oldCode)) {
-      showButtonFeedback(btn, 'Blocco non trovato', 2500);
-      return;
-    }
-    
-    codeEl.value = editorText.replaceAll(oldCode, newCode);
-    // Svuota solo i campi della patch
-    oldCodeEl.value = '';
-    newCodeEl.value = '';
-    showButtonFeedback(btn, 'Applicato!', 1500);
-    
-    // Aggiorna UI editor principale
-    updateGutter();
-    updatePreview();
-  };
-
-  // --- Pulsanti Pannello API ---
-  // Aggiungiamo un listener solo se il bottone esiste (dopo la patch HTML)
-  document.addEventListener('DOMContentLoaded', () => {
-    const saveApiBtn = document.getElementById('saveApiBtn');
-    if (saveApiBtn) {
-      saveApiBtn.onclick = (e) => {
-        const apiKeyInput = document.getElementById('api-key-input');
-        if (!apiKeyInput || !apiKeyInput.value) {
-          showButtonFeedback(e.currentTarget, 'Campo vuoto', 1500);
-          return;
-        }
-        // Per ora non fa nulla, mostra solo il feedback
-        console.log("Salvataggio API (simulato):", apiKeyInput.value.substring(0, 4) + "...");
-        showButtonFeedback(e.currentTarget, 'Salvato!', 1500);
-      };
-    }
-  });
-
-  // Gestione per lo script che viene eseguito immediatamente
-  // (il DOMContentLoaded potrebbe non essere necessario dato che lo script è alla fine, 
-  // ma la logica precedente per i bottoni API non funzionerebbe senza)
-  // Riscriviamo la parte API per funzionare subito
-  const saveApiBtn = document.getElementById('saveApiBtn');
-  if (saveApiBtn) {
-    saveApiBtn.onclick = (e) => {
-      const apiKeyInput = document.getElementById('api-key-input');
-      if (!apiKeyInput || !apiKeyInput.value) {
-        showButtonFeedback(e.currentTarget, 'Campo vuoto', 1500);
-        return;
-      }
-      console.log("Salvataggio API (simulato):", apiKeyInput.value.substring(0, 4) + "...");
-      showButtonFeedback(e.currentTarget, 'Salvato!', 1500);
-    };
-  }
-  
-  // --- Controlli Cerca/Sostituisci ---
-  document.getElementById('findInput').addEventListener('input', () => { lastSearchIndex = 0; });
-  let lastSearchIndex = 0;
-
-  document.getElementById('findBtn').onclick = (e) => {
-    const btn = e.currentTarget;
-    const searchTerm = document.getElementById('findInput').value;
-    if (!searchTerm) {
-      showButtonFeedback(btn, 'Inserisci testo', 1500);
-      return;
-    }
-    const body = codeEl.value;
-    let startIndex = body.indexOf(searchTerm, lastSearchIndex);
-    if (startIndex === -1) {
-      lastSearchIndex = 0;
-      startIndex = body.indexOf(searchTerm, lastSearchIndex);
-    }
-    if (startIndex !== -1) {
-      codeEl.focus();
-      codeEl.setSelectionRange(startIndex, startIndex + searchTerm.length);
-      lastSearchIndex = startIndex + 1;
-      showButtonFeedback(btn, 'Trovato!', 1000);
+    // Carica da LocalStorage o Default
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if(saved) {
+      editor.setValue(saved);
     } else {
-      showButtonFeedback(btn, 'Non trovato', 1500);
+      editor.setValue(getDefaultTemplate());
     }
-  };
 
-  document.getElementById('replaceBtn').onclick = (e) => {
-    const btn = e.currentTarget;
-    const searchTerm = document.getElementById('findInput').value;
-    const replaceTerm = document.getElementById('replaceInput').value;
-    if (!searchTerm) {
-      showButtonFeedback(btn, 'Inserisci testo', 1500);
-      return;
-    }
-    const start = codeEl.selectionStart;
-    const end = codeEl.selectionEnd;
-    if (codeEl.value.substring(start, end) === searchTerm) {
-      codeEl.setRangeText(replaceTerm, start, end, 'end');
-      lastSearchIndex = start + replaceTerm.length;
-      updateGutter();
-      showButtonFeedback(btn, 'Sostituito!', 1000);
-      // Cerca il prossimo
-      setTimeout(() => document.getElementById('findBtn').click(), 1100);
-    } else {
-      // Se non c'è testo selezionato, fai partire il "Trova"
-      document.getElementById('findBtn').click();
-    }
-  };
+    // Eventi Editor
+    editor.on("change", () => {
+      saveToStorage();
+      debouncedPreview();
+    });
 
-  document.getElementById('replaceAllBtn').onclick = (e) => {
-    const btn = e.currentTarget;
-    const searchTerm = document.getElementById('findInput').value;
-    const replaceTerm = document.getElementById('replaceInput').value;
-    if (!searchTerm) {
-      showButtonFeedback(btn, 'Inserisci testo', 1500);
-      return;
-    }
-    if (!codeEl.value.includes(searchTerm)) {
-      showButtonFeedback(btn, 'Non trovato', 1500);
-      return;
-    }
-    codeEl.value = codeEl.value.replaceAll(searchTerm, replaceTerm);
-    updateGutter();
+    // Prima anteprima
     updatePreview();
-    showButtonFeedback(btn, 'Fatto!', 1000);
+    setupResizer();
   };
 
-  // --- Logica "Salva con nome" ---
-  document.getElementById('downloadBtn').onclick = async (e) => {
-    const btn = e.currentTarget;
-    const baseName = (document.getElementById('filename').value.trim() || 'file');
-    let extension = document.getElementById('file-extension').value;
-    if (extension === 'custom') {
-      extension = document.getElementById('custom-extension').value.trim();
-      if (extension && extension.charAt(0) !== '.') extension = '.' + extension;
-    }
-    const finalFilename = baseName + (extension || '.txt');
-    const blob = new Blob([codeEl.value], { type: 'text/plain;charset=utf-8' });
-
-    if (window.showSaveFilePicker) {
-      try {
-        showButtonFeedback(btn, 'Salvo...', 30000); // Feedback lungo
-        const handle = await window.showSaveFilePicker({
-          suggestedName: finalFilename,
-          types: [{ description: 'File di Testo', accept: { 'text/plain': [extension] } }],
-        });
-        const writable = await handle.createWritable();
-        await writable.write(blob);
-        await writable.close();
-        showButtonFeedback(btn, 'Salvato!', 1500);
-      } catch (err) {
-        if (err.name !== 'AbortError') {
-          console.error("Errore salvataggio:", err);
-          showButtonFeedback(btn, 'Fallito', 2000);
-        } else {
-          showButtonFeedback(btn, 'Annullato', 1500);
-        }
-      }
-    } else {
-      // Fallback (es. Firefox)
-      try {
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(blob);
-        a.download = finalFilename;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(a.href);
-        showButtonFeedback(btn, 'Scaricato!', 1500);
-      } catch (err) {
-        showButtonFeedback(btn, 'Fallito', 2000);
-      }
-    }
-  };
-
-  document.getElementById('file-extension').addEventListener('change', (e) => {
-    document.getElementById('custom-extension').style.display = (e.target.value === 'custom') ? 'inline-block' : 'none';
-  });
-
-  // --- Pulsanti Anteprima ---
-  document.getElementById('refreshBtn').onclick=(e)=>{
-    updatePreview();
-    showButtonFeedback(e.currentTarget, 'Aggiornato!', 1000);
-  }
-
-  document.getElementById('openNewBtn').onclick=(e)=>{
-    const blob=new Blob([codeEl.value],{type:'text/html'});
-    window.open(URL.createObjectURL(blob),'_blank');
-    showButtonFeedback(e.currentTarget, 'Aperto!', 1000);
-  }
-
-  // --- Contenuto iniziale ---
-  const starter = `<!doctype html>
+  function getDefaultTemplate() {
+    return `<!DOCTYPE html>
 <html>
 <head>
-  <meta charset="utf-8">
-  <title>Esempio</title>
   <style>
-    body { font-family: sans-serif; padding: 2em; }
+    body { font-family: sans-serif; padding: 20px; color: #333; }
     h1 { color: #0146bc; }
-    p { line-height: 1.6; }
-    button { 
-      background: #eddc01; 
-      color: #00338a; 
-      border: none; 
-      padding: 10px 15px;
-      font-weight: bold;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-    button:hover { filter: brightness(0.9); }
+    .card { background: #eee; padding: 15px; border-radius: 8px; }
   </style>
 </head>
 <body>
-  <h1>Titolo Esempio</h1>
-  <p>Modifica questo HTML e premi "Aggiorna".</p>
-  <p>Puoi anche cercare e sostituire "Mondo" con un altro testo.</p>
-  <button onclick="alert('Ciao!')">Click Me</button>
+  <h1>Ciao Mondo!</h1>
+  <div class="card">
+    <p>Prova a modificare questo testo o lo stile CSS.</p>
+    <button onclick="console.log('Click bottone: ' + new Date().toLocaleTimeString())">
+      Testa Console
+    </button>
+  </div>
+  
+  <script>
+    console.log("App pronta! Prova a causare un errore...");
+    // throw new Error("Errore di prova"); 
+  <\/script>
 </body>
 </html>`;
-  codeEl.value = starter;
-  updateGutter();
-  updatePreview();
+  }
+
+  // --- LOGICA SALVATAGGIO & PREVIEW ---
+  
+  function saveToStorage() {
+    localStorage.setItem(STORAGE_KEY, editor.getValue());
+    const status = document.getElementById('saveStatus');
+    status.textContent = 'Salvando...';
+    setTimeout(() => status.textContent = 'Salvato', 500);
+  }
+
+  // Debounce per non aggiornare l'iframe ad ogni singolo tasto
+  let debounceTimer;
+  function debouncedPreview() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(updatePreview, 1000); // 1 secondo di ritardo
+  }
+
+  function updatePreview() {
+    const previewFrame = document.getElementById('preview');
+    const code = editor.getValue();
+    
+    // Script per intercettare la console dentro l'iframe
+    const consoleInterceptor = `
+      <script>
+        (function(){
+          function send(type, args){
+            try {
+              window.parent.postMessage({
+                source: 'playground-console',
+                type: type,
+                args: Array.from(args).map(a => String(a))
+              }, '*');
+            } catch(e){}
+          }
+          const originalLog = console.log;
+          const originalWarn = console.warn;
+          const originalError = console.error;
+          
+          console.log = function(...args){ originalLog.apply(console, args); send('log', args); };
+          console.warn = function(...args){ originalWarn.apply(console, args); send('warn', args); };
+          console.error = function(...args){ originalError.apply(console, args); send('error', args); };
+          
+          window.onerror = function(msg, url, line){
+            send('error', [msg + " (Line: " + line + ")"]);
+          };
+        })();
+      <\/script>
+    `;
+
+    // Inietta script console prima di tutto
+    const finalHtml = code.replace('<head>', '<head>' + consoleInterceptor);
+    
+    previewFrame.srcdoc = finalHtml;
+  }
+
+  // --- GESTIONE CONSOLE UI ---
+  const consoleOutput = document.getElementById('console-output');
+  
+  window.addEventListener('message', (event) => {
+    if (event.data && event.data.source === 'playground-console') {
+      addConsoleLog(event.data.type, event.data.args);
+    }
+  });
+
+  function addConsoleLog(type, args) {
+    const entry = document.createElement('div');
+    entry.className = `log-entry log-${type}`;
+    const time = new Date().toLocaleTimeString().split(' ')[0];
+    entry.textContent = `[${time}] > ${args.join(' ')}`;
+    consoleOutput.appendChild(entry);
+    consoleOutput.scrollTop = consoleOutput.scrollHeight;
+  }
+
+  document.getElementById('clearConsoleBtn').onclick = () => {
+    consoleOutput.innerHTML = '<div style="color:#666;font-style:italic">Console pulita.</div>';
+  };
+
+  // --- FUNZIONI TOOLBAR ---
+
+  function showFeedback(btn, text) {
+    const fb = btn.querySelector('.feedback');
+    const orig = btn.querySelector('span:first-child');
+    if(fb && orig) {
+      fb.textContent = text;
+      btn.classList.add('loading');
+      setTimeout(() => btn.classList.remove('loading'), 1500);
+    }
+  }
+
+  document.getElementById('copyBtn').onclick = function() {
+    navigator.clipboard.writeText(editor.getValue());
+    showFeedback(this, 'Copiato!');
+  };
+
+  document.getElementById('pasteBtn').onclick = async function() {
+    try {
+      const text = await navigator.clipboard.readText();
+      editor.setValue(text);
+      showFeedback(this, 'Incollato!');
+    } catch(e) { alert('Impossibile accedere appunti'); }
+  };
+
+  document.getElementById('clearBtn').onclick = function() {
+    if(confirm('Cancellare tutto il codice?')) editor.setValue('');
+  };
+
+  document.getElementById('refreshBtn').onclick = function() {
+    updatePreview();
+    showFeedback(this, 'Aggiornato');
+  };
+  
+  document.getElementById('newTabBtn').onclick = function() {
+    const blob = new Blob([editor.getValue()], {type: 'text/html'});
+    window.open(URL.createObjectURL(blob), '_blank');
+  };
+
+  // Import / Export
+  document.getElementById('downloadBtn').onclick = function() {
+    const name = document.getElementById('filename').value || 'file';
+    const ext = document.getElementById('fileExtension').value;
+    const blob = new Blob([editor.getValue()], {type: 'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = name + ext;
+    a.click();
+    showFeedback(this, 'Scaricato');
+  };
+
+  document.getElementById('importBtn').onclick = () => document.getElementById('fileInput').click();
+  document.getElementById('fileInput').onchange = function(e) {
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => editor.setValue(e.target.result);
+    reader.readAsText(file);
+    this.value = null; 
+  };
+
+  // --- CERCA E SOSTITUISCI (Base) ---
+  // Nota: CodeMirror ha i suoi plugin di ricerca avanzata, ma usiamo una logica custom semplice qui
+  // per mantenere coerenza con l'interfaccia esistente.
+  
+  let searchCursor = null;
+  document.getElementById('findBtn').onclick = function() {
+    const query = document.getElementById('findInput').value;
+    if(!query) return;
+    
+    // Cerca dal cursore corrente
+    const cursor = editor.getSearchCursor(query, editor.getCursor());
+    if (!cursor.findNext()) {
+      // Se non trova, ricomincia dall'inizio
+      const fromStart = editor.getSearchCursor(query, {line:0, ch:0});
+      if(fromStart.findNext()){
+        editor.setSelection(fromStart.from(), fromStart.to());
+        editor.scrollIntoView({from: fromStart.from(), to: fromStart.to()}, 20);
+        showFeedback(this, 'Trovato');
+      } else {
+        showFeedback(this, 'Non trovato');
+      }
+    } else {
+      editor.setSelection(cursor.from(), cursor.to());
+      editor.scrollIntoView({from: cursor.from(), to: cursor.to()}, 20);
+      showFeedback(this, 'Trovato');
+    }
+  };
+
+  document.getElementById('replaceBtn').onclick = function() {
+    const query = document.getElementById('findInput').value;
+    const replacement = document.getElementById('replaceInput').value;
+    if(editor.getSelection() === query) {
+      editor.replaceSelection(replacement);
+      document.getElementById('findBtn').click(); // Trova il prossimo
+    } else {
+      document.getElementById('findBtn').click();
+    }
+  };
+  
+  document.getElementById('replaceAllBtn').onclick = function() {
+    const query = document.getElementById('findInput').value;
+    const repl = document.getElementById('replaceInput').value;
+    const content = editor.getValue();
+    const newContent = content.replaceAll(query, repl);
+    if(content !== newContent) {
+      editor.setValue(newContent);
+      showFeedback(this, 'Fatto');
+    } else {
+      showFeedback(this, 'Nessuna occorrenza');
+    }
+  };
+
+  // --- MODALE PATCH ---
+  const patchModal = document.getElementById('patchModal');
+  document.getElementById('patchBtn').onclick = () => patchModal.style.display = 'flex';
+  document.getElementById('closePatchBtn').onclick = () => patchModal.style.display = 'none';
+  
+  document.getElementById('applyPatchBtn').onclick = function() {
+    const oldCode = document.getElementById('patchOld').value;
+    const newCode = document.getElementById('patchNew').value;
+    const currentContent = editor.getValue();
+    
+    if(currentContent.includes(oldCode) && oldCode.trim() !== "") {
+      const patchedContent = currentContent.replace(oldCode, newCode);
+      editor.setValue(patchedContent);
+      patchModal.style.display = 'none';
+      document.getElementById('patchOld').value = ''; 
+      document.getElementById('patchNew').value = '';
+    } else {
+      alert("Blocco di codice 'Vecchio' non trovato esattamente nel testo.");
+    }
+  };
+
+  // --- RESIZER LOGIC ---
+  function setupResizer() {
+    const resizer = document.getElementById('resizer');
+    const editorPane = document.getElementById('paneEditor');
+    const previewPane = document.getElementById('panePreview');
+    
+    let isResizing = false;
+
+    resizer.addEventListener('mousedown', (e) => {
+      isResizing = true;
+      resizer.classList.add('active');
+      document.body.style.cursor = 'col-resize';
+      e.preventDefault(); // Evita selezione testo
+    });
+
+    document.addEventListener('mousemove', (e) => {
+      if (!isResizing) return;
+      
+      const containerWidth = document.getElementById('workspace').offsetWidth;
+      // Calcola larghezza in percentuale per il pane di destra
+      const newPreviewWidth = containerWidth - e.clientX;
+      
+      // Limiti minimi (300px)
+      if (e.clientX > 300 && newPreviewWidth > 300) {
+        // Usiamo flex-basis per ridimensionare
+        editorPane.style.flex = `1`; // Editor prende resto
+        previewPane.style.width = `${newPreviewWidth}px`;
+        previewPane.style.flex = `none`;
+      }
+    });
+
+    document.addEventListener('mouseup', () => {
+      if(isResizing) {
+        isResizing = false;
+        resizer.classList.remove('active');
+        document.body.style.cursor = 'default';
+        editor.refresh(); // CodeMirror fix resize
+      }
+    });
+  }
+
 </script>
 </body>
 </html>
