@@ -104,21 +104,21 @@
     .file-group { display: flex; gap: 4px; align-items: center; background: #fff; border: 1px solid var(--border-color); border-radius: 4px; padding: 2px; }
     .file-group input, .file-group select { border: none; font-size: 12px; padding: 4px; outline: none; background: transparent; }
 
-    /* --- MODAL E TABS --- */
+    /* --- STILI EVOLUZIONE PATCH --- */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
       display: none; align-items: center; justify-content: center; z-index: 999;
     }
     .modal-content {
-      background: var(--card); padding: 20px; border-radius: var(--radius); width: 620px;
+      background: var(--card); padding: 20px; border-radius: var(--radius); width: 600px;
       display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     }
-    .patch-tabs { display: flex; gap: 4px; background: #eee; padding: 4px; border-radius: 4px; }
-    .patch-tab-btn { flex: 1; border: 0; padding: 8px; cursor: pointer; font-size: 12px; font-weight: bold; border-radius: 2px; background: transparent; color: var(--text-light); }
-    .patch-tab-btn.active { background: white; color: var(--brand-blue); box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .patch-tabs { display: flex; gap: 5px; background: #eee; padding: 4px; border-radius: 6px; margin-bottom: 5px; }
+    .patch-tab-btn { flex: 1; border: 0; padding: 8px; cursor: pointer; border-radius: 4px; font-size: 12px; font-weight: bold; background: transparent; color: var(--text-light); }
+    .patch-tab-btn.active { background: #fff; color: var(--brand-blue); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    
     .tab-pane { display: none; flex-direction: column; gap: 10px; }
     .tab-pane.active { display: flex; }
-
     textarea.patch-area { width: 100%; min-height: 100px; border: 1px solid var(--border-color); border-radius: 4px; font-family: var(--mono); font-size: 12px; resize: vertical;}
   </style>
   
@@ -159,22 +159,13 @@
         <button id="copyBtn" class="btn btn-yellow"><span>Copia</span><div class="feedback-layer"></div></button>
         <button id="pasteBtn" class="btn btn-ghost"><span>Incolla</span><div class="feedback-layer"></div></button>
         <button id="clearBtn" class="btn btn-ghost">Pulisci</button>
-        <button id="patchBtn" class="btn btn-blue">Tool Patch</button>
+        <button id="patchBtn" class="btn btn-ghost">Patch</button>
         
         <div style="flex-grow:1"></div>
 
         <div class="file-group">
           <input type="text" id="filename" value="progetto" placeholder="Nome file" style="width:80px">
-          <select id="fileExtension">
-            <option value=".html">.html</option>
-            <option value=".htm">.htm</option>
-            <option value=".css">.css</option>
-            <option value=".js">.js</option>
-            <option value=".json">.json</option>
-            <option value=".txt">.txt</option>
-            <option value=".md">.md</option>
-            <option value=".svg">.svg</option>
-          </select>
+          <select id="fileExtension"><option value=".html">.html</option><option value=".txt">.txt</option></select>
         </div>
         <button id="downloadBtn" class="btn btn-blue"><span>Salva File</span><div class="feedback-layer"></div></button>
         <input type="file" id="fileInput" style="display:none">
@@ -210,36 +201,48 @@
 
   <div id="patchModal" class="modal-overlay">
     <div class="modal-content">
-      <h3 style="margin:0; color:var(--brand-blue)">Patch System</h3>
+      <h3 style="margin:0; color:var(--brand-blue)">Aggiornamento Codice</h3>
       
       <div class="patch-tabs">
-        <button class="patch-tab-btn active" data-tab="tabAI">AI Bulk Patch</button>
-        <button class="patch-tab-btn" data-tab="tabManual">Patch Singola</button>
-      </div>
-
-      <div id="tabAI" class="tab-pane active">
-        <button id="copyAIPromptBtn" class="btn btn-yellow" style="width:100%">Copia Prompt per IA (con Sorgente)</button>
-        <textarea id="patchJSON" class="patch-area" placeholder='Incolla il JSON: [{"find": "...", "replace": "..."}]' spellcheck="false"></textarea>
-      </div>
-
-      <div id="tabManual" class="tab-pane">
-        <textarea id="patchOld" class="patch-area" placeholder="Codice da trovare..." spellcheck="false" style="min-height:60px"></textarea>
-        <textarea id="patchNew" class="patch-area" placeholder="Sostituisci con..." spellcheck="false" style="min-height:60px"></textarea>
+        <button class="patch-tab-btn active" onclick="switchTab('single')">Patch Singola</button>
+        <button class="patch-tab-btn" onclick="switchTab('bulk')">AI Bulk Update</button>
       </div>
 
       <div id="patchFeedback" style="font-size: 13px; font-weight: bold; min-height: 20px; text-align: center;"></div>
 
-      <div style="display:flex; justify-content:flex-end; gap:10px;">
+      <div id="tab-single" class="tab-pane active">
+        <div>
+          <label style="font-size:12px; font-weight:600">Codice da trovare:</label>
+          <textarea id="patchOld" class="patch-area" spellcheck="false" placeholder="Incolla qui il blocco di codice da sostituire..."></textarea>
+        </div>
+        <div>
+          <label style="font-size:12px; font-weight:600">Sostituisci con:</label>
+          <textarea id="patchNew" class="patch-area" spellcheck="false" placeholder="Incolla qui il nuovo codice..."></textarea>
+        </div>
+      </div>
+
+      <div id="tab-bulk" class="tab-pane">
+        <div style="background: #fff9c4; padding: 10px; border-radius: 4px; font-size: 11px; border: 1px solid #fbc02d;">
+            <strong>Step 1:</strong> Copia il prompt per l'IA. 
+            <strong>Step 2:</strong> Incolla il JSON ricevuto sotto.
+        </div>
+        <button id="copyAIPromptBtn" class="btn btn-yellow" style="width: 100%;">
+            Copia Prompt per AI (include Sorgente)
+        </button>
+        <textarea id="patchJSON" class="patch-area" spellcheck="false" placeholder='Incolla qui il JSON generato dall AI... Es: [{"find": "vecchio", "replace": "nuovo"}]'></textarea>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top: 5px;">
         <button id="undoPatchBtn" class="btn btn-ghost" style="display:none; color:red; border-color:red">Annulla</button>
         <button id="closePatchBtn" class="btn btn-ghost">Chiudi</button>
-        <button id="applyPatchBtn" class="btn btn-blue">Applica</button>
+        <button id="applyPatchBtn" class="btn btn-blue">Applica Modifiche</button>
       </div>
     </div>
   </div>
 
 <script>
   let editor, lastContentBeforePatch = null, debounceTimer;
-  const STORAGE_KEY = 'html_playground_content_final_v2';
+  const STORAGE_KEY = 'html_playground_content';
 
   window.onload = function() {
     editor = CodeMirror.fromTextArea(document.getElementById("code"), {
@@ -261,17 +264,18 @@
 
     updatePreview();
     setupResizer();
-    setupTabs();
   };
 
   function getDefaultTemplate() {
-    return `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body{font-family:sans-serif;padding:20px;}\n    .box{background:#f0f0f0; padding:20px; border-radius:8px;}\n  </style>\n</head>\n<body>\n  <div class="box">\n    <h1>Ciao!</h1>\n    <p>prova superata</p>\n    <button onclick="console.log('Log di prova')">Test Console</button>\n  </div>\n</body>\n</html>`;
+    return `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body{font-family:sans-serif;padding:20px;}\n    .box{background:#f0f0f0; padding:20px; border-radius:8px;}\n  </style>\n</head>\n<body>\n  <div class="box">\n    <h1>Ciao!</h1>\n    <p>Modifica il codice per vedere l'anteprima.</p>\n    <button onclick="console.log('Log di prova: ' + new Date().toLocaleTimeString())">Test Console</button>\n  </div>\n</body>\n</html>`;
   }
 
+  // FIX: Ricarica migliorata
   function updatePreview() {
     const frame = document.getElementById('preview');
     const code = editor.getValue();
     const interceptor = `\n<script>\n(function(){\n  const send = (type, args) => window.parent.postMessage({source:'playground-console', type, args: Array.from(args).map(String)}, '*');\n  ['log','warn','error'].forEach(m => {\n    const orig = console[m]; console[m] = (...args) => { orig.apply(console, args); send(m, args); };\n  });\n  window.onerror = (m, u, l) => send('error', [m + " (Riga: " + l + ")"]);\n})();\n<\/script>\n`;
+    
     let final;
     const headIndex = code.toLowerCase().indexOf('<head>');
     if (headIndex !== -1) {
@@ -280,22 +284,20 @@
     } else {
       final = interceptor + code;
     }
-    frame.src = "about:blank";
-    setTimeout(() => { frame.srcdoc = final; }, 10);
+    
+    frame.srcdoc = final;
   }
 
-  function setupTabs() {
-    const btns = document.querySelectorAll('.patch-tab-btn');
-    btns.forEach(btn => {
-      btn.onclick = () => {
-        btns.forEach(b => b.classList.remove('active'));
-        document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-        btn.classList.add('active');
-        document.getElementById(btn.dataset.tab).classList.add('active');
-      };
-    });
-  }
+  // FIX: Nuova Tab migliorata
+  document.getElementById('newTabBtn').onclick = () => {
+    const code = editor.getValue();
+    const win = window.open();
+    win.document.open();
+    win.document.write(code);
+    win.document.close();
+  };
 
+  // --- MESSAGGI CONSOLE ---
   window.addEventListener('message', e => {
     if (e.data?.source === 'playground-console') {
       const entry = document.createElement('div');
@@ -307,6 +309,10 @@
     }
   });
 
+  document.getElementById('clearConsoleBtn').onclick = () => document.getElementById('console-output').innerHTML = '';
+  document.getElementById('refreshBtn').onclick = () => updatePreview();
+
+  // --- TOOLBAR ---
   function showFeedback(btn, text) {
     const layer = btn.querySelector('.feedback-layer');
     if(layer) {
@@ -329,13 +335,12 @@
     } catch(e) { alert("Permesso negato."); }
   };
 
-  document.getElementById('patchBtn').onclick = () => document.getElementById('patchModal').style.display = 'flex';
-  document.getElementById('closePatchBtn').onclick = () => document.getElementById('patchModal').style.display = 'none';
+  document.getElementById('clearBtn').onclick = () => confirm('Vuoi cancellare tutto il codice?') && editor.setValue('');
 
   document.getElementById('downloadBtn').onclick = function() {
     const name = document.getElementById('filename').value || 'file';
     const ext = document.getElementById('fileExtension').value;
-    const blob = new Blob([editor.getValue()], {type: 'text/plain'});
+    const blob = new Blob([editor.getValue()], {type: 'text/html'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     a.download = name + ext;
@@ -353,63 +358,138 @@
     }
   };
 
-  // --- LOGICA PATCH ---
+  // --- LOGICA MODAL PATCH EVOLUTA ---
+  const patchModal = document.getElementById('patchModal');
+  const patchFeedback = document.getElementById('patchFeedback');
+  const undoBtn = document.getElementById('undoPatchBtn');
+  let currentTab = 'single';
+
+  window.switchTab = (tab) => {
+    currentTab = tab;
+    document.querySelectorAll('.patch-tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
+    document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
+    document.getElementById(`tab-${tab}`).classList.add('active');
+    patchFeedback.textContent = '';
+  };
+
+  document.getElementById('patchBtn').onclick = () => {
+    patchModal.style.display = 'flex';
+    patchFeedback.textContent = '';
+  };
+
+  document.getElementById('closePatchBtn').onclick = () => patchModal.style.display = 'none';
+
+  // Generazione Prompt per AI
   document.getElementById('copyAIPromptBtn').onclick = function() {
-    const prompt = `Agisci come un sistema di patch JSON. Analizza il codice e restituisci SOLO un array JSON.\nOgni oggetto: {"find": "codice_esatto", "replace": "nuovo_codice"}.\n\nSORGENTE:\n${editor.getValue()}`;
+    const currentCode = editor.getValue();
+    const prompt = `Agisci come un sistema di aggiornamento codice. Analizza il mio codice sorgente e restituisci SOLO un array JSON per applicare le modifiche richieste. 
+
+REGOLE PER IL JSON:
+1. Deve essere un array di oggetti: [{"find": "codice esistente", "replace": "nuovo codice"}]
+2. La stringa "find" deve essere IDENTICA carattere per carattere a quella nel sorgente (inclusi spazi e a capo).
+3. Non aggiungere commenti o testo extra fuori dal JSON.
+
+CODICE SORGENTE ATTUALE:
+\`\`\`html
+${currentCode}
+\`\`\`
+
+RICHIESTA MODIFICA:
+[DESCRIVI QUI COSA VUOI CAMBIARE]`;
+
     navigator.clipboard.writeText(prompt);
     showFeedback(this, 'Prompt Copiato!');
   };
 
-  document.getElementById('applyPatchBtn').onclick = function() {
-    let current = editor.getValue();
-    lastContentBeforePatch = current;
-    const isAI = document.getElementById('tabAI').classList.contains('active');
-    const feedback = document.getElementById('patchFeedback');
+  // Applicazione Patch (Singola o Bulk)
+  document.getElementById('applyPatchBtn').onclick = () => {
+    const currentContent = editor.getValue();
+    lastContentBeforePatch = currentContent;
+    let newContent = currentContent;
 
-    if (isAI) {
-      try {
-        const patches = JSON.parse(document.getElementById('patchJSON').value);
-        let count = 0;
-        patches.forEach(p => {
-          if (p.find && current.includes(p.find)) {
-            current = current.split(p.find).join(p.replace);
-            count++;
-          }
-        });
-        if (count > 0) {
-          editor.setValue(current);
-          feedback.style.color = 'green';
-          feedback.textContent = `✔ Applicate ${count} modifiche.`;
-          document.getElementById('undoPatchBtn').style.display = 'inline-flex';
-        } else throw new Error();
-      } catch (e) {
-        feedback.style.color = 'red';
-        feedback.textContent = '✖ Errore JSON o nessuna corrispondenza.';
-      }
+    if (currentTab === 'single') {
+        const oldV = document.getElementById('patchOld').value;
+        const newV = document.getElementById('patchNew').value;
+        if(oldV.trim() !== "" && currentContent.includes(oldV)) {
+            newContent = currentContent.replace(oldV, newV);
+            finishPatch(newContent, '✔ Patch Singola applicata!');
+            document.getElementById('patchOld').value = '';
+            document.getElementById('patchNew').value = '';
+        } else {
+            failPatch('✖ Errore: Blocco non trovato.');
+        }
     } else {
-      const oldV = document.getElementById('patchOld').value;
-      const newV = document.getElementById('patchNew').value;
-      if (oldV && current.includes(oldV)) {
-        editor.setValue(current.replace(oldV, newV));
-        feedback.style.color = 'green';
-        feedback.textContent = '✔ Patch applicata!';
-        document.getElementById('undoPatchBtn').style.display = 'inline-flex';
-      } else {
-        feedback.style.color = 'red';
-        feedback.textContent = '✖ Codice non trovato.';
-      }
+        const jsonVal = document.getElementById('patchJSON').value;
+        try {
+            const patches = JSON.parse(jsonVal);
+            let appliedCount = 0;
+            patches.forEach(p => {
+                if (p.find && newContent.includes(p.find)) {
+                    // Usiamo split/join per rimpiazzare tutte le occorrenze esatte
+                    newContent = newContent.split(p.find).join(p.replace);
+                    appliedCount++;
+                }
+            });
+            if (appliedCount > 0) {
+                finishPatch(newContent, `✔ AI Bulk Patch: ${appliedCount} modifiche applicate!`);
+                document.getElementById('patchJSON').value = '';
+            } else {
+                failPatch('✖ Nessuna corrispondenza trovata per gli elementi del JSON.');
+            }
+        } catch (e) {
+            failPatch('✖ Errore: Formato JSON non valido.');
+        }
     }
   };
 
-  document.getElementById('undoPatchBtn').onclick = function() {
+  function finishPatch(content, msg) {
+    editor.setValue(content);
+    patchFeedback.style.color = 'green';
+    patchFeedback.textContent = msg;
+    undoBtn.style.display = 'inline-flex';
+  }
+
+  function failPatch(msg) {
+    patchFeedback.style.color = 'red';
+    patchFeedback.textContent = msg;
+  }
+
+  undoBtn.onclick = () => {
     if(lastContentBeforePatch) {
       editor.setValue(lastContentBeforePatch);
       lastContentBeforePatch = null;
-      this.style.display = 'none';
-      document.getElementById('patchFeedback').textContent = 'Annullato.';
+      undoBtn.style.display = 'none';
+      patchFeedback.style.color = 'orange';
+      patchFeedback.textContent = 'Ripristinato!';
     }
   };
 
+  // --- RICERCA ---
+  document.getElementById('findBtn').onclick = function() {
+    const q = document.getElementById('findInput').value;
+    if(!q) return;
+    let cur = editor.getSearchCursor(q, editor.getCursor("to"));
+    if(!cur.findNext()) {
+      cur = editor.getSearchCursor(q, {line:0, ch:0});
+      if(!cur.findNext()) { showFeedback(this, 'No'); return; }
+    }
+    editor.setSelection(cur.from(), cur.to());
+    editor.focus();
+  };
+
+  document.getElementById('replaceBtn').onclick = function() {
+    const q = document.getElementById('findInput').value;
+    const rep = document.getElementById('replaceInput').value;
+    if(editor.getSelection() === q) {
+      editor.replaceSelection(rep);
+      document.getElementById('findBtn').click();
+    } else {
+      document.getElementById('findBtn').click();
+    }
+  };
+
+  // --- RESIZER ---
   function setupResizer() {
     const res = document.getElementById('resizer'), pr = document.getElementById('panePreview');
     let active = false;
