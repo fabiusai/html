@@ -3,131 +3,74 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>HTML Playground Pro</title>
+  <title>HTML Playground Pro - AI Patch Ready</title>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/neo.min.css">
   
   <style>
     :root{
-      --brand-blue: #0146bc;
-      --brand-yellow: #eddc01;
-      --brand-blue-dark: #00338a;
-      --bg: #f5f5f5;
-      --card: #ffffff;
-      --text-dark: #222222;
-      --text-light: #5f6f81;
-      --border-color: #e0e0e0;
-      --radius: 8px;
+      --brand-blue: #0146bc; --brand-yellow: #eddc01; --brand-blue-dark: #00338a;
+      --bg: #f5f5f5; --card: #ffffff; --text-dark: #222222; --text-light: #5f6f81;
+      --border-color: #e0e0e0; --radius: 8px;
       --mono: "Fira Code", "JetBrains Mono", Consolas, monospace;
       --ui-font: Inter, system-ui, -apple-system, sans-serif;
+      --log-bg: #1e1e1e; --log-text: #d4d4d4; --log-warn: #ffca28; --log-error: #f44336;
     }
 
     *{box-sizing:border-box}
-    body{
-      font-family: var(--ui-font);
-      color: var(--text-dark);
-      background: var(--bg);
-      margin: 0; padding: 20px;
-      height: 100vh; display: flex; flex-direction: column;
-    }
+    body{ font-family: var(--ui-font); color: var(--text-dark); background: var(--bg); margin: 0; padding: 20px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
 
-    .app-header{
-      display: flex; align-items: center; gap: 16px; margin-bottom: 16px;
-      background: var(--card); padding: 12px 16px; border-radius: var(--radius);
-      border: 1px solid var(--border-color); flex-shrink: 0;
-    }
-    .logo{
-      width: 40px; height: 40px; border-radius: var(--radius);
-      display: flex; align-items: center; justify-content: center; background: var(--brand-yellow);
-    }
+    .app-header{ display: flex; align-items: center; gap: 16px; margin-bottom: 16px; background: var(--card); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--border-color); flex-shrink: 0; }
+    .logo{ width: 40px; height: 40px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; background: var(--brand-yellow); }
     .logo-icon { width: 24px; height: 24px; fill: var(--brand-blue); }
-    h1{font-size: 18px; margin: 0; color: var(--brand-blue);}
-    p.lead{margin: 0; color: var(--text-light); font-size: 12px;}
+    h1{ font-size: 18px; margin: 0; color: var(--brand-blue); }
 
     .workspace { display: flex; flex: 1; overflow: hidden; min-height: 0; gap: 0; }
 
-    .pane-editor {
-      flex: 1; display: flex; flex-direction: column; background: var(--card);
-      border-radius: var(--radius); border: 1px solid var(--border-color);
-      min-width: 300px; padding: 10px;
-    }
+    .pane-editor { flex: 1; display: flex; flex-direction: column; background: var(--card); border-radius: var(--radius); border: 1px solid var(--border-color); min-width: 300px; padding: 10px; overflow: hidden; }
+    .pane-preview { width: 45%; display: flex; flex-direction: column; gap: 12px; min-width: 300px; flex-shrink: 0; }
 
     .resizer { width: 12px; cursor: col-resize; display: flex; align-items: center; justify-content: center; z-index: 10; }
     .resizer::after { content: ""; width: 4px; height: 40px; background: var(--border-color); border-radius: 2px; }
 
-    .pane-preview { width: 45%; display: flex; flex-direction: column; gap: 12px; min-width: 300px; }
+    .preview-container { flex: 2; background: var(--card); border-radius: var(--radius); border: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 10px; overflow: hidden; }
+    .console-container { flex: 1; background: var(--log-bg); border-radius: var(--radius); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #333; }
 
-    .preview-container {
-      flex: 2; background: var(--card); border-radius: var(--radius); border: 1px solid var(--border-color);
-      display: flex; flex-direction: column; padding: 10px; overflow: hidden;
-    }
-
-    .console-container { flex: 1; background: #1e1e1e; border-radius: var(--radius); display: flex; flex-direction: column; overflow: hidden; }
-
-    .section-header {
-      display: flex; justify-content: space-between; align-items: center;
-      margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);
-    }
-    .console-container .section-header { padding: 8px 10px; background: #252526; border-bottom: 1px solid #333; margin:0; }
-    .section-title h2{font-size: 14px; margin: 0; color: var(--brand-blue); display: flex; align-items: center; gap: 6px;}
+    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
+    .console-container .section-header { padding: 6px 12px; background: #252526; border-bottom: 1px solid #333; margin:0; }
+    .section-title h2{ font-size: 13px; margin: 0; color: var(--brand-blue); font-weight: 700; }
 
     .CodeMirror { height: 100%; font-family: var(--mono); font-size: 13px; border: 1px solid var(--border-color); border-radius: 4px; flex-grow: 1;}
-    
     .iframe-wrap { flex: 1; border: 1px solid var(--border-color); border-radius: 4px; background: #fff; overflow: hidden; position: relative; }
     iframe { width: 100%; height: 100%; border: 0; }
     
-    #console-output { flex: 1; overflow-y: auto; padding: 8px; font-family: var(--mono); font-size: 12px; color: #ddd; }
-    .log-entry { border-bottom: 1px solid #333; padding: 4px 0; white-space: pre-wrap; word-break: break-all; }
+    #console-output { flex: 1; overflow-y: auto; padding: 4px 0; font-family: var(--mono); font-size: 11px; color: var(--log-text); }
+    .log-entry { padding: 4px 12px; border-bottom: 1px solid #2d2d2d; display: flex; gap: 8px; }
+    .log-entry.log-warn { background: rgba(255, 202, 40, 0.1); color: var(--log-warn); }
+    .log-entry.log-error { background: rgba(244, 67, 54, 0.1); color: var(--log-error); }
 
-    .search-controls { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
-    .search-controls input { flex: 1; min-width: 120px; padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px;}
-    
     .toolbar { display: flex; gap: 8px; margin-top: 8px; align-items: center; flex-wrap: wrap;}
-    
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 8px 12px; border-radius: 4px; border: 0; cursor: pointer;
-      font-weight: 600; font-size: 13px; position: relative; overflow: hidden;
-    }
+    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border-radius: 4px; border: 0; cursor: pointer; font-weight: 600; font-size: 12px; position: relative; overflow: hidden; }
     .btn-blue { background: var(--brand-blue); color: white; }
     .btn-yellow { background: var(--brand-yellow); color: var(--brand-blue-dark); }
     .btn-ghost { background: transparent; border: 1px solid var(--border-color); color: var(--brand-blue); }
-    .btn-tiny { padding: 4px 8px; font-size: 11px; }
 
-    .btn .feedback-layer {
-      position: absolute; inset: 0; background: inherit; display: flex; 
-      align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.2s;
-    }
+    .btn .feedback-layer { position: absolute; inset: 0; background: inherit; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.2s; z-index: 10; }
     .btn.notifying .feedback-layer { opacity: 1; }
 
     .file-group { display: flex; gap: 4px; align-items: center; background: #fff; border: 1px solid var(--border-color); border-radius: 4px; padding: 2px; }
-    .file-group input, .file-group select { border: none; font-size: 12px; padding: 4px; outline: none; background: transparent; }
+    .file-group input, .file-group select { border: none; font-size: 11px; padding: 4px; outline: none; background: transparent; }
 
-    /* --- STILI EVOLUZIONE PATCH --- */
-    .modal-overlay {
-      position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
-      display: none; align-items: center; justify-content: center; z-index: 999;
-    }
-    .modal-content {
-      background: var(--card); padding: 20px; border-radius: var(--radius); width: 600px;
-      display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
-    }
-    .patch-tabs { display: flex; gap: 5px; background: #eee; padding: 4px; border-radius: 6px; margin-bottom: 5px; }
-    .patch-tab-btn { flex: 1; border: 0; padding: 8px; cursor: pointer; border-radius: 4px; font-size: 12px; font-weight: bold; background: transparent; color: var(--text-light); }
-    .patch-tab-btn.active { background: #fff; color: var(--brand-blue); box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    
+    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 999; }
+    .modal-content { background: var(--card); padding: 20px; border-radius: var(--radius); width: 600px; display: flex; flex-direction: column; gap: 12px; }
+    .patch-tabs { display: flex; gap: 5px; background: #eee; padding: 4px; border-radius: 6px; }
+    .patch-tab-btn { flex: 1; border: 0; padding: 8px; cursor: pointer; border-radius: 4px; font-size: 11px; font-weight: bold; background: transparent; }
+    .patch-tab-btn.active { background: #fff; color: var(--brand-blue); }
     .tab-pane { display: none; flex-direction: column; gap: 10px; }
     .tab-pane.active { display: flex; }
-    textarea.patch-area { width: 100%; min-height: 100px; border: 1px solid var(--border-color); border-radius: 4px; font-family: var(--mono); font-size: 12px; resize: vertical;}
+    textarea.patch-area { width: 100%; min-height: 100px; border: 1px solid var(--border-color); border-radius: 4px; font-family: var(--mono); font-size: 12px; padding: 8px; }
   </style>
-  
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/search/searchcursor.min.js"></script>
 </head>
 <body>
 
@@ -135,7 +78,7 @@
     <div class="logo"><svg class="logo-icon" viewBox="0 0 24 24"><path d="M11.24 2.37l-5.41 2.31L11.24 9.1v12.52l-7.6-3.26C3.25 18.15 3 17.8 3 17.41V6.13c0-.39.25-.74.64-.94l7.6-3.26c.26-.11.55-.11.8 0zM12.76 2.37l7.6 3.26c.39.2.64.55.64.94v11.28c0 .39-.25.74-.64.94l-7.6 3.26c-.26.11-.55-.11-.8 0V9.1l5.41-4.42-5.41-2.31z"></path></svg></div>
     <div>
       <h1>Editor HTML Pro</h1>
-      <p class="lead">Editor con Auto-save, Live Preview e Debug Console.</p>
+      <p class="lead">Versione Stabilizzata con AI Patch Tool</p>
     </div>
   </header>
 
@@ -143,56 +86,51 @@
     <div class="pane-editor" id="paneEditor">
       <div class="section-header">
         <div class="section-title"><h2>Codice Sorgente</h2></div>
-        <div style="font-size: 11px;" id="saveStatus">Salvato</div>
+        <div id="saveStatus" style="font-size: 11px;">Salvato</div>
       </div>
-
-      <div class="search-controls">
-        <input type="text" id="findInput" placeholder="Cerca...">
-        <button id="findBtn" class="btn btn-tiny btn-ghost">Trova</button>
-        <input type="text" id="replaceInput" placeholder="Sostituisci...">
-        <button id="replaceBtn" class="btn btn-tiny btn-ghost">Sostituisci</button>
-      </div>
-
       <textarea id="code"></textarea>
-
       <div class="toolbar">
         <button id="copyBtn" class="btn btn-yellow"><span>Copia</span><div class="feedback-layer"></div></button>
         <button id="pasteBtn" class="btn btn-ghost"><span>Incolla</span><div class="feedback-layer"></div></button>
-        <button id="clearBtn" class="btn btn-ghost">Pulisci</button>
-        <button id="patchBtn" class="btn btn-ghost">Patch</button>
-        
-        <div style="flex-grow:1"></div>
-
-        <div class="file-group">
-          <input type="text" id="filename" value="progetto" placeholder="Nome file" style="width:80px">
-          <select id="fileExtension"><option value=".html">.html</option><option value=".txt">.txt</option></select>
-        </div>
-        <button id="downloadBtn" class="btn btn-blue"><span>Salva File</span><div class="feedback-layer"></div></button>
-        <input type="file" id="fileInput" style="display:none">
         <button id="importBtn" class="btn btn-ghost">Importa</button>
+        <button id="patchBtn" class="btn btn-ghost">Patch AI</button>
+        <div style="flex-grow:1"></div>
+        <div class="file-group">
+          <input type="text" id="filename" value="progetto" style="width:60px">
+          <select id="fileExtension" onchange="toggleCustomExt()">
+            <option value=".html">.html</option>
+            <option value=".css">.css</option>
+            <option value=".js">.js</option>
+            <option value=".json">.json</option>
+            <option value=".txt">.txt</option>
+            <option value="custom">Altro...</option>
+          </select>
+          <input type="text" id="customExt" placeholder=".ext" style="display:none; width:45px; border-left: 1px solid #ddd !important">
+        </div>
+        <button id="downloadBtn" class="btn btn-blue"><span>Salva</span><div class="feedback-layer"></div></button>
+        <input type="file" id="fileInput" style="display:none">
       </div>
     </div>
 
     <div class="resizer" id="resizer"></div>
 
-    <div class="pane-preview">
+    <div class="pane-preview" id="panePreview">
       <div class="preview-container">
         <div class="section-header">
           <div class="section-title"><h2>Anteprima Live</h2></div>
-          <div style="display:flex; gap:6px">
-            <button id="refreshBtn" class="btn btn-tiny btn-ghost">Ricarica</button>
-            <button id="newTabBtn" class="btn btn-tiny btn-ghost">Nuova Tab</button>
+          <div style="display:flex; gap:5px">
+             <button id="refreshBtn" class="btn btn-ghost" style="padding:4px 8px; font-size:10px">Ricarica</button>
+             <button id="newTabBtn" class="btn btn-ghost" style="padding:4px 8px; font-size:10px">Nuova Tab</button>
           </div>
         </div>
         <div class="iframe-wrap">
           <iframe id="preview" sandbox="allow-scripts allow-modals allow-forms allow-popups allow-same-origin"></iframe>
         </div>
       </div>
-
       <div class="console-container">
         <div class="section-header">
-          <div class="section-title"><h2 style="color:#ccc">Console JS</h2></div>
-          <button id="clearConsoleBtn" class="btn btn-tiny btn-dark" style="color:#fff">Pulisci</button>
+          <div class="section-title"><h2 style="color:#aaa">Console Debug</h2></div>
+          <button id="clearConsoleBtn" class="btn" style="color:#fff; font-size:10px; background:transparent">Pulisci</button>
         </div>
         <div id="console-output"></div>
       </div>
@@ -201,62 +139,53 @@
 
   <div id="patchModal" class="modal-overlay">
     <div class="modal-content">
-      <h3 style="margin:0; color:var(--brand-blue)">Aggiornamento Codice</h3>
-      
       <div class="patch-tabs">
-        <button class="patch-tab-btn active" onclick="switchTab('single')">Patch Singola</button>
-        <button class="patch-tab-btn" onclick="switchTab('bulk')">AI Bulk Update</button>
+        <button id="tabMan" class="patch-tab-btn active" onclick="switchTab('man')">Manuale</button>
+        <button id="tabAI" class="patch-tab-btn" onclick="switchTab('ai')">AI Bulk Update</button>
       </div>
-
-      <div id="patchFeedback" style="font-size: 13px; font-weight: bold; min-height: 20px; text-align: center;"></div>
-
-      <div id="tab-single" class="tab-pane active">
-        <div>
-          <label style="font-size:12px; font-weight:600">Codice da trovare:</label>
-          <textarea id="patchOld" class="patch-area" spellcheck="false" placeholder="Incolla qui il blocco di codice da sostituire..."></textarea>
-        </div>
-        <div>
-          <label style="font-size:12px; font-weight:600">Sostituisci con:</label>
-          <textarea id="patchNew" class="patch-area" spellcheck="false" placeholder="Incolla qui il nuovo codice..."></textarea>
-        </div>
+      <div id="patchFeedback" style="font-size: 12px; font-weight: bold; text-align: center; height: 18px;"></div>
+      
+      <div id="pane-man" class="tab-pane active">
+        <textarea id="patchOld" class="patch-area" placeholder="Incolla codice da sostituire..."></textarea>
+        <textarea id="patchNew" class="patch-area" placeholder="Incolla nuovo codice..."></textarea>
       </div>
-
-      <div id="tab-bulk" class="tab-pane">
-        <div style="background: #fff9c4; padding: 10px; border-radius: 4px; font-size: 11px; border: 1px solid #fbc02d;">
-            <strong>Step 1:</strong> Copia il prompt per l'IA. 
-            <strong>Step 2:</strong> Incolla il JSON ricevuto sotto.
-        </div>
-        <button id="copyAIPromptBtn" class="btn btn-yellow" style="width: 100%;">
-            Copia Prompt per AI (include Sorgente)
+      <div id="pane-ai" class="tab-pane">
+        <button id="copyAIPromptBtn" class="btn btn-yellow" style="width: 100%; margin-bottom:5px">
+            <span>Copia Prompt per IA</span><div class="feedback-layer"></div>
         </button>
-        <textarea id="patchJSON" class="patch-area" spellcheck="false" placeholder='Incolla qui il JSON generato dall AI... Es: [{"find": "vecchio", "replace": "nuovo"}]'></textarea>
+        <textarea id="patchJSON" class="patch-area" placeholder='Incolla qui il JSON ricevuto...'></textarea>
       </div>
 
-      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top: 5px;">
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
         <button id="undoPatchBtn" class="btn btn-ghost" style="display:none; color:red; border-color:red">Annulla</button>
         <button id="closePatchBtn" class="btn btn-ghost">Chiudi</button>
-        <button id="applyPatchBtn" class="btn btn-blue">Applica Modifiche</button>
+        <button id="applyPatchBtn" class="btn btn-blue">Applica Patch</button>
       </div>
     </div>
   </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+
 <script>
-  let editor, lastContentBeforePatch = null, debounceTimer;
-  const STORAGE_KEY = 'html_playground_content';
+  let editor, lastContent = null, timer;
 
   window.onload = function() {
     editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-      mode: "htmlmixed", theme: "neo", lineNumbers: true, lineWrapping: true, autofocus: true
+      mode: "htmlmixed", theme: "neo", lineNumbers: true, lineWrapping: true
     });
 
-    const savedContent = localStorage.getItem(STORAGE_KEY);
-    editor.setValue(savedContent || getDefaultTemplate());
+    const saved = localStorage.getItem('html_pro_final');
+    editor.setValue(saved || `<!DOCTYPE html><html><body><h1>Test Patch</h1><p>Prova a cambiare questo testo usando il tool patch.</p></body></html>`);
     
     editor.on("change", () => {
-      localStorage.setItem(STORAGE_KEY, editor.getValue());
       document.getElementById('saveStatus').textContent = 'Salvataggio...';
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(() => {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        localStorage.setItem('html_pro_final', editor.getValue());
         document.getElementById('saveStatus').textContent = 'Salvato';
         updatePreview();
       }, 800);
@@ -266,53 +195,6 @@
     setupResizer();
   };
 
-  function getDefaultTemplate() {
-    return `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body{font-family:sans-serif;padding:20px;}\n    .box{background:#f0f0f0; padding:20px; border-radius:8px;}\n  </style>\n</head>\n<body>\n  <div class="box">\n    <h1>Ciao!</h1>\n    <p>Modifica il codice per vedere l'anteprima.</p>\n    <button onclick="console.log('Log di prova: ' + new Date().toLocaleTimeString())">Test Console</button>\n  </div>\n</body>\n</html>`;
-  }
-
-  // FIX: Ricarica migliorata
-  function updatePreview() {
-    const frame = document.getElementById('preview');
-    const code = editor.getValue();
-    const interceptor = `\n<script>\n(function(){\n  const send = (type, args) => window.parent.postMessage({source:'playground-console', type, args: Array.from(args).map(String)}, '*');\n  ['log','warn','error'].forEach(m => {\n    const orig = console[m]; console[m] = (...args) => { orig.apply(console, args); send(m, args); };\n  });\n  window.onerror = (m, u, l) => send('error', [m + " (Riga: " + l + ")"]);\n})();\n<\/script>\n`;
-    
-    let final;
-    const headIndex = code.toLowerCase().indexOf('<head>');
-    if (headIndex !== -1) {
-      const splitPoint = headIndex + 6;
-      final = code.slice(0, splitPoint) + interceptor + code.slice(splitPoint);
-    } else {
-      final = interceptor + code;
-    }
-    
-    frame.srcdoc = final;
-  }
-
-  // FIX: Nuova Tab migliorata
-  document.getElementById('newTabBtn').onclick = () => {
-    const code = editor.getValue();
-    const win = window.open();
-    win.document.open();
-    win.document.write(code);
-    win.document.close();
-  };
-
-  // --- MESSAGGI CONSOLE ---
-  window.addEventListener('message', e => {
-    if (e.data?.source === 'playground-console') {
-      const entry = document.createElement('div');
-      entry.className = `log-entry log-${e.data.type}`;
-      entry.textContent = `[${new Date().toLocaleTimeString().split(' ')[0]}] > ${e.data.args.join(' ')}`;
-      const out = document.getElementById('console-output');
-      out.appendChild(entry);
-      out.scrollTop = out.scrollHeight;
-    }
-  });
-
-  document.getElementById('clearConsoleBtn').onclick = () => document.getElementById('console-output').innerHTML = '';
-  document.getElementById('refreshBtn').onclick = () => updatePreview();
-
-  // --- TOOLBAR ---
   function showFeedback(btn, text) {
     const layer = btn.querySelector('.feedback-layer');
     if(layer) {
@@ -322,32 +204,32 @@
     }
   }
 
-  document.getElementById('copyBtn').onclick = function() {
-    navigator.clipboard.writeText(editor.getValue());
-    showFeedback(this, 'Copiato!');
+  function updatePreview() {
+    const code = editor.getValue();
+    const inject = `<script>(function(){ 
+      const send = (t,a) => window.parent.postMessage({source:'pl-console',t,a:Array.from(a).map(String)},'*');
+      ['log','warn','error'].forEach(m => { console[m] = (...args) => send(m,args); });
+    })();<\/script>`;
+    document.getElementById('preview').srcdoc = code.includes('<head>') ? code.replace('<head>', '<head>' + inject) : inject + code;
+  }
+
+  window.onmessage = (e) => {
+    if(e.data?.source === 'pl-console') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${e.data.t}`;
+      entry.textContent = `> ${e.data.a.join(' ')}`;
+      const out = document.getElementById('console-output');
+      out.appendChild(entry);
+      out.scrollTop = out.scrollHeight;
+    }
   };
 
-  document.getElementById('pasteBtn').onclick = async function() {
-    try {
-      const text = await navigator.clipboard.readText();
-      editor.setValue(text);
-      showFeedback(this, 'Incollato!');
-    } catch(e) { alert("Permesso negato."); }
-  };
-
-  document.getElementById('clearBtn').onclick = () => confirm('Vuoi cancellare tutto il codice?') && editor.setValue('');
-
-  document.getElementById('downloadBtn').onclick = function() {
-    const name = document.getElementById('filename').value || 'file';
-    const ext = document.getElementById('fileExtension').value;
-    const blob = new Blob([editor.getValue()], {type: 'text/html'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = name + ext;
-    a.click();
-    showFeedback(this, 'Scaricato!');
-  };
-
+  // Toolbar Actions
+  document.getElementById('copyBtn').onclick = function() { navigator.clipboard.writeText(editor.getValue()); showFeedback(this, 'Copiato!'); };
+  document.getElementById('pasteBtn').onclick = async function() { editor.setValue(await navigator.clipboard.readText()); showFeedback(this, 'Incollato!'); };
+  document.getElementById('newTabBtn').onclick = () => { const w = window.open(); w.document.write(editor.getValue()); };
+  document.getElementById('refreshBtn').onclick = () => updatePreview();
+  document.getElementById('clearConsoleBtn').onclick = () => document.getElementById('console-output').innerHTML = '';
   document.getElementById('importBtn').onclick = () => document.getElementById('fileInput').click();
   document.getElementById('fileInput').onchange = (e) => {
     const file = e.target.files[0];
@@ -358,148 +240,70 @@
     }
   };
 
-  // --- LOGICA MODAL PATCH EVOLUTA ---
-  const patchModal = document.getElementById('patchModal');
-  const patchFeedback = document.getElementById('patchFeedback');
-  const undoBtn = document.getElementById('undoPatchBtn');
-  let currentTab = 'single';
-
-  window.switchTab = (tab) => {
-    currentTab = tab;
-    document.querySelectorAll('.patch-tab-btn').forEach(b => b.classList.remove('active'));
-    document.querySelectorAll('.tab-pane').forEach(p => p.classList.remove('active'));
-    document.querySelector(`[onclick="switchTab('${tab}')"]`).classList.add('active');
-    document.getElementById(`tab-${tab}`).classList.add('active');
-    patchFeedback.textContent = '';
+  document.getElementById('downloadBtn').onclick = function() {
+    const name = document.getElementById('filename').value || 'index';
+    let ext = document.getElementById('fileExtension').value;
+    if(ext === 'custom') ext = document.getElementById('customExt').value || '.txt';
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([editor.getValue()], {type:'text/plain'}));
+    a.download = name + (ext.startsWith('.') ? ext : '.' + ext);
+    a.click();
+    showFeedback(this, 'Salvato!');
   };
 
-  document.getElementById('patchBtn').onclick = () => {
-    patchModal.style.display = 'flex';
-    patchFeedback.textContent = '';
-  };
+  // AI Patch Logic
+  const modal = document.getElementById('patchModal');
+  const fb = document.getElementById('patchFeedback');
 
-  document.getElementById('closePatchBtn').onclick = () => patchModal.style.display = 'none';
+  document.getElementById('patchBtn').onclick = () => modal.style.display = 'flex';
+  document.getElementById('closePatchBtn').onclick = () => modal.style.display = 'none';
 
-  // Generazione Prompt per AI
   document.getElementById('copyAIPromptBtn').onclick = function() {
-    const currentCode = editor.getValue();
-    const prompt = `Agisci come un sistema di aggiornamento codice. Analizza il mio codice sorgente e restituisci SOLO un array JSON per applicare le modifiche richieste. 
-
-REGOLE PER IL JSON:
-1. Deve essere un array di oggetti: [{"find": "codice esistente", "replace": "nuovo codice"}]
-2. La stringa "find" deve essere IDENTICA carattere per carattere a quella nel sorgente (inclusi spazi e a capo).
-3. Non aggiungere commenti o testo extra fuori dal JSON.
-
-CODICE SORGENTE ATTUALE:
-\`\`\`html
-${currentCode}
-\`\`\`
-
-RICHIESTA MODIFICA:
-[DESCRIVI QUI COSA VUOI CAMBIARE]`;
-
-    navigator.clipboard.writeText(prompt);
-    showFeedback(this, 'Prompt Copiato!');
+    const p = `Genera un array JSON per aggiornare il codice.\nFormato: [{"find": "codice esatto", "replace": "nuovo codice"}]\nSORGENTE:\n${editor.getValue()}\nRICHIESTA: [MODIFICA]`;
+    navigator.clipboard.writeText(p);
+    showFeedback(this, 'Copiato!');
   };
 
-  // Applicazione Patch (Singola o Bulk)
-  document.getElementById('applyPatchBtn').onclick = () => {
-    const currentContent = editor.getValue();
-    lastContentBeforePatch = currentContent;
-    let newContent = currentContent;
+  document.getElementById('applyPatchBtn').onclick = function() {
+    lastContent = editor.getValue();
+    let content = lastContent;
 
-    if (currentTab === 'single') {
-        const oldV = document.getElementById('patchOld').value;
-        const newV = document.getElementById('patchNew').value;
-        if(oldV.trim() !== "" && currentContent.includes(oldV)) {
-            newContent = currentContent.replace(oldV, newV);
-            finishPatch(newContent, '✔ Patch Singola applicata!');
-            document.getElementById('patchOld').value = '';
-            document.getElementById('patchNew').value = '';
-        } else {
-            failPatch('✖ Errore: Blocco non trovato.');
-        }
+    if(document.getElementById('pane-man').classList.contains('active')) {
+      const f = document.getElementById('patchOld').value, r = document.getElementById('patchNew').value;
+      if(f && content.includes(f)) { editor.setValue(content.split(f).join(r)); finishPatch('✔ Applicata!'); }
+      else failPatch('✖ Codice non trovato!');
     } else {
-        const jsonVal = document.getElementById('patchJSON').value;
-        try {
-            const patches = JSON.parse(jsonVal);
-            let appliedCount = 0;
-            patches.forEach(p => {
-                if (p.find && newContent.includes(p.find)) {
-                    // Usiamo split/join per rimpiazzare tutte le occorrenze esatte
-                    newContent = newContent.split(p.find).join(p.replace);
-                    appliedCount++;
-                }
-            });
-            if (appliedCount > 0) {
-                finishPatch(newContent, `✔ AI Bulk Patch: ${appliedCount} modifiche applicate!`);
-                document.getElementById('patchJSON').value = '';
-            } else {
-                failPatch('✖ Nessuna corrispondenza trovata per gli elementi del JSON.');
-            }
-        } catch (e) {
-            failPatch('✖ Errore: Formato JSON non valido.');
-        }
+      let raw = document.getElementById('patchJSON').value.trim();
+      raw = raw.replace(/```json|```/g, "").trim();
+      try {
+        const patches = JSON.parse(raw);
+        patches.forEach(p => { if(content.includes(p.find)) content = content.split(p.find).join(p.replace); });
+        editor.setValue(content); finishPatch('✔ Patch AI riuscita!');
+      } catch(e) { failPatch('✖ JSON non valido!'); }
     }
   };
 
-  function finishPatch(content, msg) {
-    editor.setValue(content);
-    patchFeedback.style.color = 'green';
-    patchFeedback.textContent = msg;
-    undoBtn.style.display = 'inline-flex';
+  function finishPatch(m) { fb.style.color='green'; fb.textContent=m; document.getElementById('undoPatchBtn').style.display='inline-flex'; }
+  function failPatch(m) { fb.style.color='red'; fb.textContent=m; }
+  document.getElementById('undoPatchBtn').onclick = function() { if(lastContent) editor.setValue(lastContent); this.style.display='none'; };
+
+  function toggleCustomExt() { document.getElementById('customExt').style.display = (document.getElementById('fileExtension').value === 'custom') ? 'block' : 'none'; }
+  function switchTab(t) {
+    document.querySelectorAll('.patch-tab-btn, .tab-pane').forEach(el => el.classList.remove('active'));
+    document.getElementById(t === 'man' ? 'tabMan' : 'tabAI').classList.add('active');
+    document.getElementById(t === 'man' ? 'pane-man' : 'pane-ai').classList.add('active');
   }
 
-  function failPatch(msg) {
-    patchFeedback.style.color = 'red';
-    patchFeedback.textContent = msg;
-  }
-
-  undoBtn.onclick = () => {
-    if(lastContentBeforePatch) {
-      editor.setValue(lastContentBeforePatch);
-      lastContentBeforePatch = null;
-      undoBtn.style.display = 'none';
-      patchFeedback.style.color = 'orange';
-      patchFeedback.textContent = 'Ripristinato!';
-    }
-  };
-
-  // --- RICERCA ---
-  document.getElementById('findBtn').onclick = function() {
-    const q = document.getElementById('findInput').value;
-    if(!q) return;
-    let cur = editor.getSearchCursor(q, editor.getCursor("to"));
-    if(!cur.findNext()) {
-      cur = editor.getSearchCursor(q, {line:0, ch:0});
-      if(!cur.findNext()) { showFeedback(this, 'No'); return; }
-    }
-    editor.setSelection(cur.from(), cur.to());
-    editor.focus();
-  };
-
-  document.getElementById('replaceBtn').onclick = function() {
-    const q = document.getElementById('findInput').value;
-    const rep = document.getElementById('replaceInput').value;
-    if(editor.getSelection() === q) {
-      editor.replaceSelection(rep);
-      document.getElementById('findBtn').click();
-    } else {
-      document.getElementById('findBtn').click();
-    }
-  };
-
-  // --- RESIZER ---
   function setupResizer() {
-    const res = document.getElementById('resizer'), pr = document.getElementById('panePreview');
+    const res = document.getElementById('resizer'), pre = document.getElementById('panePreview'), ws = document.getElementById('workspace');
     let active = false;
-    res.onmousedown = (e) => { active = true; e.preventDefault(); };
-    document.onmousemove = (e) => {
+    res.onmousedown = (e) => { active = true; document.body.style.cursor = 'col-resize'; e.preventDefault(); };
+    window.onmousemove = (e) => {
       if(!active) return;
-      const w = document.getElementById('workspace').offsetWidth - e.clientX;
-      if(e.clientX > 250 && w > 250) { pr.style.width = w + 'px'; pr.style.flex = 'none'; }
+      let w = window.innerWidth - e.clientX;
+      if(e.clientX > 200 && w > 200) { pre.style.width = w + 'px'; pre.style.flex = 'none'; }
     };
-    document.onmouseup = () => { active = false; editor.refresh(); };
+    window.onmouseup = () => { active = false; document.body.style.cursor = 'default'; editor.refresh(); };
   }
 </script>
 </body>
