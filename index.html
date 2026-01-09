@@ -28,200 +28,91 @@
       font-family: var(--ui-font);
       color: var(--text-dark);
       background: var(--bg);
-      margin: 0;
-      padding: 20px;
-      height: 100vh;
-      display: flex;
-      flex-direction: column;
+      margin: 0; padding: 20px;
+      height: 100vh; display: flex; flex-direction: column;
     }
 
     .app-header{
-      display: flex;
-      align-items: center;
-      gap: 16px;
-      margin-bottom: 16px;
-      background: var(--card);
-      padding: 12px 16px;
-      border-radius: var(--radius);
-      border: 1px solid var(--border-color);
-      flex-shrink: 0;
+      display: flex; align-items: center; gap: 16px; margin-bottom: 16px;
+      background: var(--card); padding: 12px 16px; border-radius: var(--radius);
+      border: 1px solid var(--border-color); flex-shrink: 0;
     }
     .logo{
-      width: 40px;
-      height: 40px;
-      border-radius: var(--radius);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: var(--brand-yellow);
+      width: 40px; height: 40px; border-radius: var(--radius);
+      display: flex; align-items: center; justify-content: center; background: var(--brand-yellow);
     }
     .logo-icon { width: 24px; height: 24px; fill: var(--brand-blue); }
     h1{font-size: 18px; margin: 0; color: var(--brand-blue);}
     p.lead{margin: 0; color: var(--text-light); font-size: 12px;}
 
-    .workspace {
-      display: flex;
-      flex: 1;
-      gap: 0;
-      overflow: hidden;
-      min-height: 0;
-    }
+    .workspace { display: flex; flex: 1; overflow: hidden; min-height: 0; gap: 0; }
 
     .pane-editor {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      background: var(--card);
-      border-radius: var(--radius);
-      border: 1px solid var(--border-color);
-      min-width: 300px;
-      padding: 10px;
+      flex: 1; display: flex; flex-direction: column; background: var(--card);
+      border-radius: var(--radius); border: 1px solid var(--border-color);
+      min-width: 300px; padding: 10px;
     }
 
-    .resizer {
-      width: 12px;
-      cursor: col-resize;
-      background: transparent;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      transition: background 0.2s;
-    }
-    .resizer:hover, .resizer.active { background: rgba(1, 70, 188, 0.1); }
-    .resizer::after {
-      content: "";
-      width: 4px;
-      height: 40px;
-      background: var(--border-color);
-      border-radius: 2px;
-    }
+    .resizer { width: 12px; cursor: col-resize; display: flex; align-items: center; justify-content: center; z-index: 10; }
+    .resizer::after { content: ""; width: 4px; height: 40px; background: var(--border-color); border-radius: 2px; }
 
-    .pane-preview {
-      width: 45%;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      min-width: 300px;
-    }
+    .pane-preview { width: 45%; display: flex; flex-direction: column; gap: 12px; min-width: 300px; }
 
     .preview-container {
-      flex: 2;
-      background: var(--card);
-      border-radius: var(--radius);
-      border: 1px solid var(--border-color);
-      display: flex;
-      flex-direction: column;
-      padding: 10px;
-      overflow: hidden;
+      flex: 2; background: var(--card); border-radius: var(--radius); border: 1px solid var(--border-color);
+      display: flex; flex-direction: column; padding: 10px; overflow: hidden;
     }
 
-    .console-container {
-      flex: 1;
-      background: #1e1e1e;
-      border-radius: var(--radius);
-      border: 1px solid var(--text-dark);
-      display: flex;
-      flex-direction: column;
-      padding: 0;
-      overflow: hidden;
-    }
+    .console-container { flex: 1; background: #1e1e1e; border-radius: var(--radius); display: flex; flex-direction: column; overflow: hidden; }
 
     .section-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 8px;
-      padding-bottom: 8px;
-      border-bottom: 1px solid var(--border-color);
-      flex-shrink: 0;
+      display: flex; justify-content: space-between; align-items: center;
+      margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color);
     }
-    .console-container .section-header {
-      padding: 8px 10px;
-      border-bottom: 1px solid #333;
-      background: #252526;
-      margin-bottom: 0;
-    }
+    .console-container .section-header { padding: 8px 10px; background: #252526; border-bottom: 1px solid #333; margin:0; }
     .section-title h2{font-size: 14px; margin: 0; color: var(--brand-blue); display: flex; align-items: center; gap: 6px;}
-    .console-container h2 { color: #ccc; }
 
-    .CodeMirror {
-      height: 100%;
-      font-family: var(--mono);
-      font-size: 13px;
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      flex-grow: 1;
-    }
-    .cm-s-neo.CodeMirror { background: #fff; color: #222; }
-
-    .iframe-wrap { flex: 1; border: 1px solid var(--border-color); border-radius: 4px; background: #fff; position: relative;}
-    iframe { width: 100%; height: 100%; border: 0; display: block; }
+    .CodeMirror { height: 100%; font-family: var(--mono); font-size: 13px; border: 1px solid var(--border-color); border-radius: 4px; flex-grow: 1;}
     
-    #console-output {
-      flex: 1;
-      overflow-y: auto;
-      padding: 8px;
-      font-family: var(--mono);
-      font-size: 12px;
-      color: #ddd;
-    }
+    .iframe-wrap { flex: 1; border: 1px solid var(--border-color); border-radius: 4px; background: #fff; overflow: hidden; position: relative; }
+    iframe { width: 100%; height: 100%; border: 0; }
+    
+    #console-output { flex: 1; overflow-y: auto; padding: 8px; font-family: var(--mono); font-size: 12px; color: #ddd; }
     .log-entry { border-bottom: 1px solid #333; padding: 4px 0; white-space: pre-wrap; word-break: break-all; }
-    .log-log { color: #ddd; }
-    .log-warn { color: #eddc01; }
-    .log-error { color: #ff6b6b; }
-    .log-info { color: #61afef; }
 
     .search-controls { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
-    .search-controls input { flex-grow: 1; padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px;}
+    .search-controls input { flex: 1; min-width: 120px; padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px;}
     
-    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    .toolbar { display: flex; gap: 8px; margin-top: 8px; align-items: center; flex-wrap: wrap;}
     
-    .btn{
+    .btn {
       display: inline-flex; align-items: center; justify-content: center; gap: 6px;
       padding: 8px 12px; border-radius: 4px; border: 0; cursor: pointer;
-      font-weight: 600; font-size: 13px; transition: filter 0.2s;
-      position: relative; overflow: hidden; white-space: nowrap;
+      font-weight: 600; font-size: 13px; position: relative; overflow: hidden;
     }
-    .btn:hover { filter: brightness(0.95); }
-    .btn-blue{background: var(--brand-blue); color: white;}
-    .btn-yellow{background: var(--brand-yellow); color: var(--brand-blue-dark);}
-    .btn-ghost{background: transparent; border: 1px solid var(--border-color); color: var(--brand-blue);}
-    .btn-tiny { padding: 4px 8px; font-size: 11px; height: 24px; }
-    .btn-dark { background: #333; color: #fff; border: 1px solid #444; }
-    .btn-danger { color: #ff6b6b; border: 1px solid #ff6b6b; background: transparent; }
-    .btn svg { width: 14px; height: 14px; fill: currentColor; }
+    .btn-blue { background: var(--brand-blue); color: white; }
+    .btn-yellow { background: var(--brand-yellow); color: var(--brand-blue-dark); }
+    .btn-ghost { background: transparent; border: 1px solid var(--border-color); color: var(--brand-blue); }
+    .btn-tiny { padding: 4px 8px; font-size: 11px; }
 
-    .btn .feedback {
+    .btn .feedback-layer {
       position: absolute; inset: 0; background: inherit; display: flex; 
-      align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+      align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.2s;
     }
-    .btn.loading .feedback { opacity: 1; }
-    .btn.loading span:first-child { opacity: 0; }
+    .btn.notifying .feedback-layer { opacity: 1; }
 
     .file-group { display: flex; gap: 4px; align-items: center; background: #fff; border: 1px solid var(--border-color); border-radius: 4px; padding: 2px; }
     .file-group input, .file-group select { border: none; font-size: 12px; padding: 4px; outline: none; background: transparent; }
-    
+
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
       display: none; align-items: center; justify-content: center; z-index: 999;
     }
     .modal-content {
       background: var(--card); padding: 20px; border-radius: var(--radius); width: 600px;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 12px;
+      display: flex; flex-direction: column; gap: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.2);
     }
-    textarea.patch-area {
-      width: 100%; min-height: 100px; border: 1px solid var(--border-color);
-      border-radius: 4px; padding: 8px; font-family: var(--mono); font-size: 12px; resize: vertical;
-    }
-    label { font-weight: 600; font-size: 12px; color: var(--brand-blue); display: block; margin-bottom: 4px; }
-
-    @media (max-width: 800px) {
-      .workspace { flex-direction: column; overflow: auto; }
-      .resizer { display: none; }
-      .pane-preview { width: 100%; height: 500px; }
-      .pane-editor { min-height: 400px; }
-    }
+    textarea.patch-area { width: 100%; min-height: 100px; border: 1px solid var(--border-color); border-radius: 4px; font-family: var(--mono); font-size: 12px; resize: vertical;}
   </style>
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
@@ -242,11 +133,10 @@
   </header>
 
   <div class="workspace" id="workspace">
-    
     <div class="pane-editor" id="paneEditor">
       <div class="section-header">
-        <div class="section-title"><h2><svg viewBox="0 0 20 20"><path fill="currentColor" d="M12.3 3.7l4 4L4 20H0v-4L12.3 3.7zm1.4-1.4L16 0l4 4L17.7 4.6 13.7 2.3z"/></svg> Codice Sorgente</h2></div>
-        <div style="font-size: 11px; color: var(--text-light);" id="saveStatus">Salvato</div>
+        <div class="section-title"><h2>Codice Sorgente</h2></div>
+        <div style="font-size: 11px;" id="saveStatus">Salvato</div>
       </div>
 
       <div class="search-controls">
@@ -254,36 +144,34 @@
         <button id="findBtn" class="btn btn-tiny btn-ghost">Trova</button>
         <input type="text" id="replaceInput" placeholder="Sostituisci...">
         <button id="replaceBtn" class="btn btn-tiny btn-ghost">Sostituisci</button>
-        <button id="replaceAllBtn" class="btn btn-tiny btn-ghost">Tutti</button>
       </div>
 
-      <textarea id="code" name="code"></textarea>
+      <textarea id="code"></textarea>
 
       <div class="toolbar">
-        <button id="copyBtn" class="btn btn-yellow"><span>Copia</span><span class="feedback"></span></button>
-        <button id="pasteBtn" class="btn btn-ghost"><span>Incolla</span><span class="feedback"></span></button>
-        <button id="clearBtn" class="btn btn-ghost"><span>Pulisci</span><span class="feedback"></span></button>
-        <button id="patchBtn" class="btn btn-ghost"><span>Patch</span><span class="feedback"></span></button>
+        <button id="copyBtn" class="btn btn-yellow"><span>Copia</span><div class="feedback-layer"></div></button>
+        <button id="pasteBtn" class="btn btn-ghost"><span>Incolla</span><div class="feedback-layer"></div></button>
+        <button id="clearBtn" class="btn btn-ghost">Pulisci</button>
+        <button id="patchBtn" class="btn btn-ghost">Patch</button>
         
         <div style="flex-grow:1"></div>
-        
+
         <div class="file-group">
           <input type="text" id="filename" value="progetto" placeholder="Nome file" style="width:80px">
           <select id="fileExtension"><option value=".html">.html</option><option value=".txt">.txt</option></select>
         </div>
-        <button id="downloadBtn" class="btn btn-blue"><span>Salva File</span><span class="feedback"></span></button>
+        <button id="downloadBtn" class="btn btn-blue"><span>Salva File</span><div class="feedback-layer"></div></button>
         <input type="file" id="fileInput" style="display:none">
-        <button id="importBtn" class="btn btn-ghost"><span>Importa</span></button>
+        <button id="importBtn" class="btn btn-ghost">Importa</button>
       </div>
     </div>
 
     <div class="resizer" id="resizer"></div>
 
-    <div class="pane-preview" id="panePreview">
-      
+    <div class="pane-preview">
       <div class="preview-container">
         <div class="section-header">
-          <div class="section-title"><h2><svg viewBox="0 0 20 20"><path fill="currentColor" d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg> Anteprima Live</h2></div>
+          <div class="section-title"><h2>Anteprima Live</h2></div>
           <div style="display:flex; gap:6px">
             <button id="refreshBtn" class="btn btn-tiny btn-ghost">Ricarica</button>
             <button id="newTabBtn" class="btn btn-tiny btn-ghost">Nuova Tab</button>
@@ -296,35 +184,28 @@
 
       <div class="console-container">
         <div class="section-header">
-          <div class="section-title"><h2><svg viewBox="0 0 20 20" style="fill:#ccc"><path d="M0 0h24v24H0z" fill="none"/><path d="M20 19V7H4v12h16zM4 5h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V7c0-1.1.9-2 2-2zm0-2h16V2H4v1z"/></svg> Console JS</h2></div>
-          <button id="clearConsoleBtn" class="btn btn-tiny btn-dark">Pulisci</button>
+          <div class="section-title"><h2 style="color:#ccc">Console JS</h2></div>
+          <button id="clearConsoleBtn" class="btn btn-tiny btn-dark" style="color:#fff">Pulisci</button>
         </div>
-        <div id="console-output">
-          <div style="color: #666; font-style: italic;">In attesa di log...</div>
-        </div>
+        <div id="console-output"></div>
       </div>
-
     </div>
   </div>
 
   <div id="patchModal" class="modal-overlay">
     <div class="modal-content">
-      <h3 style="margin:0; color:var(--brand-blue)">Trova e Sostituisci Blocco</h3>
-      <p class="lead">Incolla il blocco esatto da cercare e il nuovo codice da inserire.</p>
-      
-      <div id="patchStatus" style="font-size: 13px; font-weight: bold; min-height: 20px;"></div>
-
+      <h3 style="margin:0; color:var(--brand-blue)">Patch Blocco Codice</h3>
+      <div id="patchFeedback" style="font-size: 13px; font-weight: bold; min-height: 20px;"></div>
       <div>
-        <label>Codice da trovare (Vecchio):</label>
+        <label style="font-size:12px; font-weight:600">Codice da trovare (Vecchio):</label>
         <textarea id="patchOld" class="patch-area" spellcheck="false"></textarea>
       </div>
       <div>
-        <label>Sostituisci con (Nuovo):</label>
+        <label style="font-size:12px; font-weight:600">Sostituisci con (Nuovo):</label>
         <textarea id="patchNew" class="patch-area" spellcheck="false"></textarea>
       </div>
-      
-      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px">
-        <button id="undoPatchBtn" class="btn btn-danger btn-tiny" style="display:none">Annulla Patch</button>
+      <div style="display:flex; justify-content:flex-end; gap:10px;">
+        <button id="undoPatchBtn" class="btn btn-ghost" style="display:none; color:red; border-color:red">Annulla</button>
         <button id="closePatchBtn" class="btn btn-ghost">Chiudi</button>
         <button id="applyPatchBtn" class="btn btn-blue">Applica Patch</button>
       </div>
@@ -332,30 +213,25 @@
   </div>
 
 <script>
-  let editor;
-  let lastContentBeforePatch = null;
+  let editor, lastContentBeforePatch = null, debounceTimer;
   const STORAGE_KEY = 'html_playground_content';
-  
+
   window.onload = function() {
     editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-      mode: "htmlmixed",
-      theme: "neo",
-      lineNumbers: true,
-      lineWrapping: true,
-      viewportMargin: Infinity,
-      autofocus: true
+      mode: "htmlmixed", theme: "neo", lineNumbers: true, lineWrapping: true, autofocus: true
     });
 
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if(saved) {
-      editor.setValue(saved);
-    } else {
-      editor.setValue(getDefaultTemplate());
-    }
-
+    const savedContent = localStorage.getItem(STORAGE_KEY);
+    editor.setValue(savedContent || getDefaultTemplate());
+    
     editor.on("change", () => {
-      saveToStorage();
-      debouncedPreview();
+      localStorage.setItem(STORAGE_KEY, editor.getValue());
+      document.getElementById('saveStatus').textContent = 'Salvataggio...';
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(() => {
+        document.getElementById('saveStatus').textContent = 'Salvato';
+        updatePreview();
+      }, 800);
     });
 
     updatePreview();
@@ -363,62 +239,53 @@
   };
 
   function getDefaultTemplate() {
-    return `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: sans-serif; padding: 20px; color: #333; }\n    h1 { color: #0146bc; }\n    .card { background: #eee; padding: 15px; border-radius: 8px; }\n  </style>\n</head>\n<body>\n  <h1>Ciao Mondo!</h1>\n  <div class="card">\n    <p>Prova a modificare questo testo o lo stile CSS.</p>\n    <button onclick="console.log('Click bottone: ' + new Date().toLocaleTimeString())">\n      Testa Console\n    </button>\n  </div>\n</body>\n</html>`;
-  }
-
-  function saveToStorage() {
-    localStorage.setItem(STORAGE_KEY, editor.getValue());
-    const status = document.getElementById('saveStatus');
-    status.textContent = 'Salvando...';
-    setTimeout(() => status.textContent = 'Salvato', 500);
-  }
-
-  let debounceTimer;
-  function debouncedPreview() {
-    clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(updatePreview, 600); // Ridotto tempo di attesa per maggiore reattività
+    return `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body{font-family:sans-serif;padding:20px;}\n    .box{background:#f0f0f0; padding:20px; border-radius:8px;}\n  </style>\n</head>\n<body>\n  <div class="box">\n    <h1>Ciao!</h1>\n    <p>Modifica il codice per vedere l'anteprima.</p>\n    <button onclick="console.log('Log di prova: ' + new Date().toLocaleTimeString())">Test Console</button>\n  </div>\n</body>\n</html>`;
   }
 
   function updatePreview() {
-    const previewFrame = document.getElementById('preview');
-    if (!previewFrame) return;
-
+    const frame = document.getElementById('preview');
     const code = editor.getValue();
-    const consoleInterceptor = `\n<script>\n(function(){\n  function send(type, args){\n    try { window.parent.postMessage({source: 'playground-console', type: type, args: Array.from(args).map(a => String(a))}, '*'); } catch(e){}\n  }\n  const originalLog = console.log; console.log = function(...args){ originalLog.apply(console, args); send('log', args); };\n  const originalWarn = console.warn; console.warn = function(...args){ originalWarn.apply(console, args); send('warn', args); };\n  const originalError = console.error; console.error = function(...args){ originalError.apply(console, args); send('error', args); };\n  window.onerror = function(msg, url, line){ send('error', [msg + " (Line: " + line + ")"]); };\n})();\n<\/script>\n`;
     
-    // Regex robusta per trovare il tag <head> indipendentemente dal maiuscolo/minuscolo o attributi
-    let finalHtml;
-    const headRegex = /<head\b[^>]*>/i;
+    const interceptor = `\n<script>\n(function(){\n  const send = (type, args) => window.parent.postMessage({source:'playground-console', type, args: Array.from(args).map(String)}, '*');\n  ['log','warn','error'].forEach(m => {\n    const orig = console[m]; console[m] = (...args) => { orig.apply(console, args); send(m, args); };\n  });\n  window.onerror = (m, u, l) => send('error', [m + " (Riga: " + l + ")"]);\n})();\n<\/script>\n`;
     
-    if (headRegex.test(code)) {
-      finalHtml = code.replace(headRegex, (match) => match + consoleInterceptor);
+    let final;
+    const headIndex = code.toLowerCase().indexOf('<head>');
+    if (headIndex !== -1) {
+      const splitPoint = headIndex + 6;
+      final = code.slice(0, splitPoint) + interceptor + code.slice(splitPoint);
     } else {
-      // Se non c'è <head>, inietta lo script all'inizio del codice
-      finalHtml = consoleInterceptor + code;
+      final = interceptor + code;
     }
     
-    previewFrame.srcdoc = finalHtml;
+    // Pulizia iframe prima di caricare per evitare loop
+    frame.src = "about:blank";
+    setTimeout(() => {
+        frame.srcdoc = final;
+    }, 10);
   }
 
-  const consoleOutput = document.getElementById('console-output');
-  window.addEventListener('message', (event) => {
-    if (event.data && event.data.source === 'playground-console') {
+  // --- MESSAGGI CONSOLE ---
+  window.addEventListener('message', e => {
+    if (e.data?.source === 'playground-console') {
       const entry = document.createElement('div');
-      entry.className = `log-entry log-${event.data.type}`;
-      entry.textContent = `[${new Date().toLocaleTimeString().split(' ')[0]}] > ${event.data.args.join(' ')}`;
-      consoleOutput.appendChild(entry);
-      consoleOutput.scrollTop = consoleOutput.scrollHeight;
+      entry.className = `log-entry log-${e.data.type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString().split(' ')[0]}] > ${e.data.args.join(' ')}`;
+      const out = document.getElementById('console-output');
+      out.appendChild(entry);
+      out.scrollTop = out.scrollHeight;
     }
   });
 
-  document.getElementById('clearConsoleBtn').onclick = () => consoleOutput.innerHTML = '';
+  document.getElementById('clearConsoleBtn').onclick = () => document.getElementById('console-output').innerHTML = '';
+  document.getElementById('refreshBtn').onclick = () => updatePreview();
 
+  // --- TOOLBAR ---
   function showFeedback(btn, text) {
-    const fb = btn.querySelector('.feedback');
-    if(fb) {
-      fb.textContent = text;
-      btn.classList.add('loading');
-      setTimeout(() => btn.classList.remove('loading'), 1500);
+    const layer = btn.querySelector('.feedback-layer');
+    if(layer) {
+      layer.textContent = text;
+      btn.classList.add('notifying');
+      setTimeout(() => btn.classList.remove('notifying'), 1500);
     }
   }
 
@@ -427,94 +294,33 @@
     showFeedback(this, 'Copiato!');
   };
 
-  document.getElementById('newTabBtn').onclick = function() {
+  document.getElementById('pasteBtn').onclick = async function() {
+    try {
+      const text = await navigator.clipboard.readText();
+      editor.setValue(text);
+      showFeedback(this, 'Incollato!');
+    } catch(e) { alert("Permesso negato per gli appunti."); }
+  };
+
+  document.getElementById('clearBtn').onclick = () => confirm('Vuoi cancellare tutto il codice?') && editor.setValue('');
+
+  document.getElementById('newTabBtn').onclick = () => {
     const blob = new Blob([editor.getValue()], {type: 'text/html'});
-    const url = URL.createObjectURL(blob);
-    window.open(url, '_blank');
+    window.open(URL.createObjectURL(blob), '_blank');
   };
 
-  document.getElementById('findBtn').onclick = function() {
-    const query = document.getElementById('findInput').value;
-    if(!query) return;
-    let cursor = editor.getSearchCursor(query, editor.getCursor("to"));
-    if (!cursor.findNext()) {
-      cursor = editor.getSearchCursor(query, {line: 0, ch: 0});
-      if (!cursor.findNext()) { showFeedback(this, 'Nessun risultato'); return; }
-    }
-    editor.setSelection(cursor.from(), cursor.to());
-    const h = editor.getScrollInfo().clientHeight;
-    const coords = editor.charCoords(cursor.from(), "local");
-    editor.scrollTo(null, (coords.top + coords.bottom) / 2 - h / 2);
-    editor.focus();
-    showFeedback(this, 'Trovato');
-  };
-
-  document.getElementById('replaceBtn').onclick = function() {
-    const query = document.getElementById('findInput').value;
-    const replacement = document.getElementById('replaceInput').value;
-    if(editor.getSelection() === query) {
-      editor.replaceSelection(replacement);
-      document.getElementById('findBtn').click();
-    } else {
-      document.getElementById('findBtn').click();
-    }
-  };
-
-  const patchModal = document.getElementById('patchModal');
-  const patchStatus = document.getElementById('patchStatus');
-  const undoPatchBtn = document.getElementById('undoPatchBtn');
-
-  document.getElementById('patchBtn').onclick = () => {
-    patchModal.style.display = 'flex';
-    patchStatus.textContent = '';
-    undoPatchBtn.style.display = 'none';
-  };
-
-  document.getElementById('closePatchBtn').onclick = () => patchModal.style.display = 'none';
-  
-  document.getElementById('applyPatchBtn').onclick = function() {
-    const oldCode = document.getElementById('patchOld').value;
-    const newCode = document.getElementById('patchNew').value;
-    const currentContent = editor.getValue();
-    
-    if (oldCode.trim() === "") {
-      patchStatus.style.color = "red";
-      patchStatus.textContent = "Errore: Inserisci il codice da trovare.";
-      return;
-    }
-
-    if(currentContent.includes(oldCode)) {
-      lastContentBeforePatch = currentContent;
-      editor.setValue(currentContent.replace(oldCode, newCode));
-      patchStatus.style.color = "green";
-      patchStatus.textContent = "✔ Patch applicata con successo!";
-      undoPatchBtn.style.display = 'inline-flex';
-      document.getElementById('patchOld').value = ''; 
-      document.getElementById('patchNew').value = '';
-    } else {
-      patchStatus.style.color = "red";
-      patchStatus.textContent = "✖ Blocco non trovato nel codice.";
-    }
-  };
-
-  undoPatchBtn.onclick = function() {
-    if(lastContentBeforePatch !== null) {
-      editor.setValue(lastContentBeforePatch);
-      lastContentBeforePatch = null;
-      patchStatus.style.color = "orange";
-      patchStatus.textContent = "Operazione annullata.";
-      this.style.display = 'none';
-    }
-  };
-
-  document.getElementById('clearBtn').onclick = () => confirm('Cancellare tutto?') && editor.setValue('');
+  // --- IMPORT / EXPORT ---
   document.getElementById('downloadBtn').onclick = function() {
+    const name = document.getElementById('filename').value || 'file';
+    const ext = document.getElementById('fileExtension').value;
     const blob = new Blob([editor.getValue()], {type: 'text/plain'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = (document.getElementById('filename').value || 'progetto') + document.getElementById('fileExtension').value;
+    a.download = name + ext;
     a.click();
+    showFeedback(this, 'Scaricato!');
   };
+
   document.getElementById('importBtn').onclick = () => document.getElementById('fileInput').click();
   document.getElementById('fileInput').onchange = (e) => {
     const file = e.target.files[0];
@@ -525,16 +331,88 @@
     }
   };
 
+  // --- RICERCA ---
+  document.getElementById('findBtn').onclick = function() {
+    const q = document.getElementById('findInput').value;
+    if(!q) return;
+    let cur = editor.getSearchCursor(q, editor.getCursor("to"));
+    if(!cur.findNext()) {
+      cur = editor.getSearchCursor(q, {line:0, ch:0});
+      if(!cur.findNext()) { showFeedback(this, 'No'); return; }
+    }
+    editor.setSelection(cur.from(), cur.to());
+    const coords = editor.charCoords(cur.from(), "local");
+    editor.scrollTo(null, (coords.top + coords.bottom) / 2 - editor.getScrollInfo().clientHeight / 2);
+    editor.focus();
+    showFeedback(this, 'Sì');
+  };
+
+  document.getElementById('replaceBtn').onclick = function() {
+    const q = document.getElementById('findInput').value;
+    const rep = document.getElementById('replaceInput').value;
+    if(editor.getSelection() === q) {
+      editor.replaceSelection(rep);
+      document.getElementById('findBtn').click();
+    } else {
+      document.getElementById('findBtn').click();
+    }
+  };
+
+  // --- PATCH ---
+  const patchModal = document.getElementById('patchModal');
+  const patchFeedback = document.getElementById('patchFeedback');
+  const undoBtn = document.getElementById('undoPatchBtn');
+
+  document.getElementById('patchBtn').onclick = () => {
+    patchModal.style.display = 'flex';
+    patchFeedback.textContent = '';
+    undoBtn.style.display = 'none';
+  };
+
+  document.getElementById('applyPatchBtn').onclick = () => {
+    const oldV = document.getElementById('patchOld').value;
+    const newV = document.getElementById('patchNew').value;
+    const current = editor.getValue();
+
+    if(oldV.trim() !== "" && current.includes(oldV)) {
+      lastContentBeforePatch = current;
+      editor.setValue(current.replace(oldV, newV));
+      
+      // Feedback Successo e Svuotamento campi
+      patchFeedback.style.color = 'green';
+      patchFeedback.textContent = '✔ Successo! Blocco sostituito e campi svuotati.';
+      document.getElementById('patchOld').value = '';
+      document.getElementById('patchNew').value = '';
+      undoBtn.style.display = 'inline-flex';
+    } else {
+      patchFeedback.style.color = 'red';
+      patchFeedback.textContent = '✖ Errore: Blocco non trovato nel codice sorgente.';
+    }
+  };
+
+  undoBtn.onclick = () => {
+    if(lastContentBeforePatch) {
+      editor.setValue(lastContentBeforePatch);
+      lastContentBeforePatch = null;
+      undoBtn.style.display = 'none';
+      patchFeedback.style.color = 'orange';
+      patchFeedback.textContent = 'Ripristinato!';
+    }
+  };
+
+  document.getElementById('closePatchBtn').onclick = () => patchModal.style.display = 'none';
+
+  // --- RESIZER ---
   function setupResizer() {
-    const resizer = document.getElementById('resizer'), ep = document.getElementById('paneEditor'), pp = document.getElementById('panePreview');
-    let isResizing = false;
-    resizer.onmousedown = (e) => { isResizing = true; document.body.style.cursor = 'col-resize'; e.preventDefault(); };
+    const res = document.getElementById('resizer'), ep = document.getElementById('paneEditor'), pr = document.getElementById('panePreview');
+    let active = false;
+    res.onmousedown = (e) => { active = true; e.preventDefault(); };
     document.onmousemove = (e) => {
-      if (!isResizing) return;
+      if(!active) return;
       const w = document.getElementById('workspace').offsetWidth - e.clientX;
-      if (e.clientX > 300 && w > 300) { ep.style.flex = '1'; pp.style.width = w + 'px'; pp.style.flex = 'none'; }
+      if(e.clientX > 250 && w > 250) { pr.style.width = w + 'px'; pr.style.flex = 'none'; }
     };
-    document.onmouseup = () => { isResizing = false; document.body.style.cursor = 'default'; editor.refresh(); };
+    document.onmouseup = () => { active = false; editor.refresh(); };
   }
 </script>
 </body>
