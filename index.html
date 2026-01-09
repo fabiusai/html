@@ -3,74 +3,233 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>HTML Playground Pro - AI Patch Ready</title>
+  <title>HTML Playground Pro</title>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/neo.min.css">
   
   <style>
     :root{
-      --brand-blue: #0146bc; --brand-yellow: #eddc01; --brand-blue-dark: #00338a;
-      --bg: #f5f5f5; --card: #ffffff; --text-dark: #222222; --text-light: #5f6f81;
-      --border-color: #e0e0e0; --radius: 8px;
+      --brand-blue: #0146bc;
+      --brand-yellow: #eddc01;
+      --brand-blue-dark: #00338a;
+      --bg: #f5f5f5;
+      --card: #ffffff;
+      --text-dark: #222222;
+      --text-light: #5f6f81;
+      --border-color: #e0e0e0;
+      --radius: 8px;
       --mono: "Fira Code", "JetBrains Mono", Consolas, monospace;
       --ui-font: Inter, system-ui, -apple-system, sans-serif;
-      --log-bg: #1e1e1e; --log-text: #d4d4d4; --log-warn: #ffca28; --log-error: #f44336;
     }
 
     *{box-sizing:border-box}
-    body{ font-family: var(--ui-font); color: var(--text-dark); background: var(--bg); margin: 0; padding: 20px; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+    body{
+      font-family: var(--ui-font);
+      color: var(--text-dark);
+      background: var(--bg);
+      margin: 0;
+      padding: 20px;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
 
-    .app-header{ display: flex; align-items: center; gap: 16px; margin-bottom: 16px; background: var(--card); padding: 12px 16px; border-radius: var(--radius); border: 1px solid var(--border-color); flex-shrink: 0; }
-    .logo{ width: 40px; height: 40px; border-radius: var(--radius); display: flex; align-items: center; justify-content: center; background: var(--brand-yellow); }
+    .app-header{
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 16px;
+      background: var(--card);
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+    .logo{
+      width: 40px;
+      height: 40px;
+      border-radius: var(--radius);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: var(--brand-yellow);
+    }
     .logo-icon { width: 24px; height: 24px; fill: var(--brand-blue); }
-    h1{ font-size: 18px; margin: 0; color: var(--brand-blue); }
+    h1{font-size: 18px; margin: 0; color: var(--brand-blue);}
+    p.lead{margin: 0; color: var(--text-light); font-size: 12px;}
 
-    .workspace { display: flex; flex: 1; overflow: hidden; min-height: 0; gap: 0; }
+    .workspace {
+      display: flex;
+      flex: 1;
+      gap: 0;
+      overflow: hidden;
+      min-height: 0;
+    }
 
-    .pane-editor { flex: 1; display: flex; flex-direction: column; background: var(--card); border-radius: var(--radius); border: 1px solid var(--border-color); min-width: 300px; padding: 10px; overflow: hidden; }
-    .pane-preview { width: 45%; display: flex; flex-direction: column; gap: 12px; min-width: 300px; flex-shrink: 0; }
+    .pane-editor {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      min-width: 300px;
+      padding: 10px;
+    }
 
-    .resizer { width: 12px; cursor: col-resize; display: flex; align-items: center; justify-content: center; z-index: 10; }
-    .resizer::after { content: ""; width: 4px; height: 40px; background: var(--border-color); border-radius: 2px; }
+    .resizer {
+      width: 12px;
+      cursor: col-resize;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      transition: background 0.2s;
+    }
+    .resizer:hover, .resizer.active { background: rgba(1, 70, 188, 0.1); }
+    .resizer::after {
+      content: "";
+      width: 4px;
+      height: 40px;
+      background: var(--border-color);
+      border-radius: 2px;
+    }
 
-    .preview-container { flex: 2; background: var(--card); border-radius: var(--radius); border: 1px solid var(--border-color); display: flex; flex-direction: column; padding: 10px; overflow: hidden; }
-    .console-container { flex: 1; background: var(--log-bg); border-radius: var(--radius); display: flex; flex-direction: column; overflow: hidden; border: 1px solid #333; }
+    .pane-preview {
+      width: 45%;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      min-width: 300px;
+    }
 
-    .section-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid var(--border-color); }
-    .console-container .section-header { padding: 6px 12px; background: #252526; border-bottom: 1px solid #333; margin:0; }
-    .section-title h2{ font-size: 13px; margin: 0; color: var(--brand-blue); font-weight: 700; }
+    .preview-container {
+      flex: 2;
+      background: var(--card);
+      border-radius: var(--radius);
+      border: 1px solid var(--border-color);
+      display: flex;
+      flex-direction: column;
+      padding: 10px;
+      overflow: hidden;
+    }
 
-    .CodeMirror { height: 100%; font-family: var(--mono); font-size: 13px; border: 1px solid var(--border-color); border-radius: 4px; flex-grow: 1;}
-    .iframe-wrap { flex: 1; border: 1px solid var(--border-color); border-radius: 4px; background: #fff; overflow: hidden; position: relative; }
-    iframe { width: 100%; height: 100%; border: 0; }
+    .console-container {
+      flex: 1;
+      background: #1e1e1e;
+      border-radius: var(--radius);
+      border: 1px solid var(--text-dark);
+      display: flex;
+      flex-direction: column;
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+      padding-bottom: 8px;
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+    .console-container .section-header {
+      padding: 8px 10px;
+      border-bottom: 1px solid #333;
+      background: #252526;
+      margin-bottom: 0;
+    }
+    .section-title h2{font-size: 14px; margin: 0; color: var(--brand-blue); display: flex; align-items: center; gap: 6px;}
+    .console-container h2 { color: #ccc; }
+
+    .CodeMirror {
+      height: 100%;
+      font-family: var(--mono);
+      font-size: 13px;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      flex-grow: 1;
+    }
+    .cm-s-neo.CodeMirror { background: #fff; color: #222; }
+
+    .iframe-wrap { flex: 1; border: 1px solid var(--border-color); border-radius: 4px; background: #fff; position: relative;}
+    iframe { width: 100%; height: 100%; border: 0; display: block; }
     
-    #console-output { flex: 1; overflow-y: auto; padding: 4px 0; font-family: var(--mono); font-size: 11px; color: var(--log-text); }
-    .log-entry { padding: 4px 12px; border-bottom: 1px solid #2d2d2d; display: flex; gap: 8px; }
-    .log-entry.log-warn { background: rgba(255, 202, 40, 0.1); color: var(--log-warn); }
-    .log-entry.log-error { background: rgba(244, 67, 54, 0.1); color: var(--log-error); }
+    #console-output {
+      flex: 1;
+      overflow-y: auto;
+      padding: 8px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: #ddd;
+    }
+    .log-entry { border-bottom: 1px solid #333; padding: 4px 0; white-space: pre-wrap; word-break: break-all; }
+    .log-log { color: #ddd; }
+    .log-warn { color: #eddc01; }
+    .log-error { color: #ff6b6b; }
+    .log-info { color: #61afef; }
 
-    .toolbar { display: flex; gap: 8px; margin-top: 8px; align-items: center; flex-wrap: wrap;}
-    .btn { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border-radius: 4px; border: 0; cursor: pointer; font-weight: 600; font-size: 12px; position: relative; overflow: hidden; }
-    .btn-blue { background: var(--brand-blue); color: white; }
-    .btn-yellow { background: var(--brand-yellow); color: var(--brand-blue-dark); }
-    .btn-ghost { background: transparent; border: 1px solid var(--border-color); color: var(--brand-blue); }
+    .search-controls { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
+    .search-controls input { flex-grow: 1; padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px;}
+    
+    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    
+    .btn{
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 8px 12px; border-radius: 4px; border: 0; cursor: pointer;
+      font-weight: 600; font-size: 13px; transition: filter 0.2s;
+      position: relative; overflow: hidden; white-space: nowrap;
+    }
+    .btn:hover { filter: brightness(0.95); }
+    .btn-blue{background: var(--brand-blue); color: white;}
+    .btn-yellow{background: var(--brand-yellow); color: var(--brand-blue-dark);}
+    .btn-ghost{background: transparent; border: 1px solid var(--border-color); color: var(--brand-blue);}
+    .btn-tiny { padding: 4px 8px; font-size: 11px; height: 24px; }
+    .btn-dark { background: #333; color: #fff; border: 1px solid #444; }
+    .btn-danger { color: #ff6b6b; border: 1px solid #ff6b6b; background: transparent; }
+    .btn svg { width: 14px; height: 14px; fill: currentColor; }
 
-    .btn .feedback-layer { position: absolute; inset: 0; background: inherit; display: flex; align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: 0.2s; z-index: 10; }
-    .btn.notifying .feedback-layer { opacity: 1; }
+    .btn .feedback {
+      position: absolute; inset: 0; background: inherit; display: flex; 
+      align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .btn.loading .feedback { opacity: 1; }
+    .btn.loading span:first-child { opacity: 0; }
 
     .file-group { display: flex; gap: 4px; align-items: center; background: #fff; border: 1px solid var(--border-color); border-radius: 4px; padding: 2px; }
-    .file-group input, .file-group select { border: none; font-size: 11px; padding: 4px; outline: none; background: transparent; }
+    .file-group input, .file-group select { border: none; font-size: 12px; padding: 4px; outline: none; background: transparent; }
+    
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
+      display: none; align-items: center; justify-content: center; z-index: 999;
+    }
+    .modal-content {
+      background: var(--card); padding: 20px; border-radius: var(--radius); width: 600px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 12px;
+    }
+    textarea.patch-area {
+      width: 100%; min-height: 100px; border: 1px solid var(--border-color);
+      border-radius: 4px; padding: 8px; font-family: var(--mono); font-size: 12px; resize: vertical;
+    }
+    label { font-weight: 600; font-size: 12px; color: var(--brand-blue); display: block; margin-bottom: 4px; }
 
-    .modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px); display: none; align-items: center; justify-content: center; z-index: 999; }
-    .modal-content { background: var(--card); padding: 20px; border-radius: var(--radius); width: 600px; display: flex; flex-direction: column; gap: 12px; }
-    .patch-tabs { display: flex; gap: 5px; background: #eee; padding: 4px; border-radius: 6px; }
-    .patch-tab-btn { flex: 1; border: 0; padding: 8px; cursor: pointer; border-radius: 4px; font-size: 11px; font-weight: bold; background: transparent; }
-    .patch-tab-btn.active { background: #fff; color: var(--brand-blue); }
-    .tab-pane { display: none; flex-direction: column; gap: 10px; }
-    .tab-pane.active { display: flex; }
-    textarea.patch-area { width: 100%; min-height: 100px; border: 1px solid var(--border-color); border-radius: 4px; font-family: var(--mono); font-size: 12px; padding: 8px; }
+    @media (max-width: 800px) {
+      .workspace { flex-direction: column; overflow: auto; }
+      .resizer { display: none; }
+      .pane-preview { width: 100%; height: 500px; }
+      .pane-editor { min-height: 400px; }
+    }
   </style>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/search/searchcursor.min.js"></script>
 </head>
 <body>
 
@@ -78,158 +237,284 @@
     <div class="logo"><svg class="logo-icon" viewBox="0 0 24 24"><path d="M11.24 2.37l-5.41 2.31L11.24 9.1v12.52l-7.6-3.26C3.25 18.15 3 17.8 3 17.41V6.13c0-.39.25-.74.64-.94l7.6-3.26c.26-.11.55-.11.8 0zM12.76 2.37l7.6 3.26c.39.2.64.55.64.94v11.28c0 .39-.25.74-.64.94l-7.6 3.26c-.26.11-.55-.11-.8 0V9.1l5.41-4.42-5.41-2.31z"></path></svg></div>
     <div>
       <h1>Editor HTML Pro</h1>
-      <p class="lead">Versione Stabilizzata con AI Patch Tool</p>
+      <p class="lead">Editor con Auto-save, Live Preview e Debug Console.</p>
     </div>
   </header>
 
   <div class="workspace" id="workspace">
+    
     <div class="pane-editor" id="paneEditor">
       <div class="section-header">
-        <div class="section-title"><h2>Codice Sorgente</h2></div>
-        <div id="saveStatus" style="font-size: 11px;">Salvato</div>
+        <div class="section-title"><h2><svg viewBox="0 0 20 20"><path fill="currentColor" d="M12.3 3.7l4 4L4 20H0v-4L12.3 3.7zm1.4-1.4L16 0l4 4L17.7 4.6 13.7 2.3z"/></svg> Codice Sorgente</h2></div>
+        <div style="font-size: 11px; color: var(--text-light);" id="saveStatus">Salvato</div>
       </div>
-      <textarea id="code"></textarea>
+
+      <div class="search-controls">
+        <input type="text" id="findInput" placeholder="Cerca...">
+        <button id="findBtn" class="btn btn-tiny btn-ghost">Trova</button>
+        <input type="text" id="replaceInput" placeholder="Sostituisci...">
+        <button id="replaceBtn" class="btn btn-tiny btn-ghost">Sostituisci</button>
+        <button id="replaceAllBtn" class="btn btn-tiny btn-ghost">Tutti</button>
+      </div>
+
+      <textarea id="code" name="code"></textarea>
+
       <div class="toolbar">
-        <button id="copyBtn" class="btn btn-yellow"><span>Copia</span><div class="feedback-layer"></div></button>
-        <button id="pasteBtn" class="btn btn-ghost"><span>Incolla</span><div class="feedback-layer"></div></button>
-        <button id="importBtn" class="btn btn-ghost">Importa</button>
-        <button id="patchBtn" class="btn btn-ghost">Patch AI</button>
+        <button id="copyBtn" class="btn btn-yellow"><span>Copia</span><span class="feedback"></span></button>
+        <button id="pasteBtn" class="btn btn-ghost"><span>Incolla</span><span class="feedback"></span></button>
+        <button id="clearBtn" class="btn btn-ghost"><span>Pulisci</span><span class="feedback"></span></button>
+        <button id="patchBtn" class="btn btn-ghost"><span>Patch</span><span class="feedback"></span></button>
+        
         <div style="flex-grow:1"></div>
+        
         <div class="file-group">
-          <input type="text" id="filename" value="progetto" style="width:60px">
-          <select id="fileExtension" onchange="toggleCustomExt()">
-            <option value=".html">.html</option>
-            <option value=".css">.css</option>
-            <option value=".js">.js</option>
-            <option value=".json">.json</option>
-            <option value=".txt">.txt</option>
-            <option value="custom">Altro...</option>
-          </select>
-          <input type="text" id="customExt" placeholder=".ext" style="display:none; width:45px; border-left: 1px solid #ddd !important">
+          <input type="text" id="filename" value="progetto" placeholder="Nome file" style="width:80px">
+          <select id="fileExtension"><option value=".html">.html</option><option value=".txt">.txt</option></select>
         </div>
-        <button id="downloadBtn" class="btn btn-blue"><span>Salva</span><div class="feedback-layer"></div></button>
+        <button id="downloadBtn" class="btn btn-blue"><span>Salva File</span><span class="feedback"></span></button>
         <input type="file" id="fileInput" style="display:none">
+        <button id="importBtn" class="btn btn-ghost"><span>Importa</span></button>
       </div>
     </div>
 
     <div class="resizer" id="resizer"></div>
 
     <div class="pane-preview" id="panePreview">
+      
       <div class="preview-container">
         <div class="section-header">
-          <div class="section-title"><h2>Anteprima Live</h2></div>
-          <div style="display:flex; gap:5px">
-             <button id="refreshBtn" class="btn btn-ghost" style="padding:4px 8px; font-size:10px">Ricarica</button>
-             <button id="newTabBtn" class="btn btn-ghost" style="padding:4px 8px; font-size:10px">Nuova Tab</button>
+          <div class="section-title"><h2><svg viewBox="0 0 20 20"><path fill="currentColor" d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg> Anteprima Live</h2></div>
+          <div style="display:flex; gap:6px">
+            <button id="refreshBtn" class="btn btn-tiny btn-ghost">Ricarica</button>
+            <button id="newTabBtn" class="btn btn-tiny btn-ghost">Nuova Tab</button>
           </div>
         </div>
         <div class="iframe-wrap">
           <iframe id="preview" sandbox="allow-scripts allow-modals allow-forms allow-popups allow-same-origin"></iframe>
         </div>
       </div>
+
       <div class="console-container">
         <div class="section-header">
-          <div class="section-title"><h2 style="color:#aaa">Console Debug</h2></div>
-          <button id="clearConsoleBtn" class="btn" style="color:#fff; font-size:10px; background:transparent">Pulisci</button>
+          <div class="section-title"><h2><svg viewBox="0 0 20 20" style="fill:#ccc"><path d="M0 0h24v24H0z" fill="none"/><path d="M20 19V7H4v12h16zM4 5h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V7c0-1.1.9-2 2-2zm0-2h16V2H4v1z"/></svg> Console JS</h2></div>
+          <button id="clearConsoleBtn" class="btn btn-tiny btn-dark">Pulisci</button>
         </div>
-        <div id="console-output"></div>
+        <div id="console-output">
+          <div style="color: #666; font-style: italic;">In attesa di log...</div>
+        </div>
       </div>
+
     </div>
   </div>
 
   <div id="patchModal" class="modal-overlay">
     <div class="modal-content">
-      <div class="patch-tabs">
-        <button id="tabMan" class="patch-tab-btn active" onclick="switchTab('man')">Manuale</button>
-        <button id="tabAI" class="patch-tab-btn" onclick="switchTab('ai')">AI Bulk Update</button>
-      </div>
-      <div id="patchFeedback" style="font-size: 12px; font-weight: bold; text-align: center; height: 18px;"></div>
+      <h3 style="margin:0; color:var(--brand-blue)">Trova e Sostituisci Blocco</h3>
+      <p class="lead">Incolla il blocco esatto da cercare e il nuovo codice da inserire.</p>
       
-      <div id="pane-man" class="tab-pane active">
-        <textarea id="patchOld" class="patch-area" placeholder="Incolla codice da sostituire..."></textarea>
-        <textarea id="patchNew" class="patch-area" placeholder="Incolla nuovo codice..."></textarea>
-      </div>
-      <div id="pane-ai" class="tab-pane">
-        <button id="copyAIPromptBtn" class="btn btn-yellow" style="width: 100%; margin-bottom:5px">
-            <span>Copia Prompt per IA</span><div class="feedback-layer"></div>
-        </button>
-        <textarea id="patchJSON" class="patch-area" placeholder='Incolla qui il JSON ricevuto...'></textarea>
-      </div>
+      <div id="patchStatus" style="font-size: 13px; font-weight: bold; min-height: 20px;"></div>
 
-      <div style="display:flex; justify-content:flex-end; gap:10px;">
-        <button id="undoPatchBtn" class="btn btn-ghost" style="display:none; color:red; border-color:red">Annulla</button>
+      <div>
+        <label>Codice da trovare (Vecchio):</label>
+        <textarea id="patchOld" class="patch-area" spellcheck="false"></textarea>
+      </div>
+      <div>
+        <label>Sostituisci con (Nuovo):</label>
+        <textarea id="patchNew" class="patch-area" spellcheck="false"></textarea>
+      </div>
+      
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px">
+        <button id="undoPatchBtn" class="btn btn-danger btn-tiny" style="display:none">Annulla Patch</button>
         <button id="closePatchBtn" class="btn btn-ghost">Chiudi</button>
         <button id="applyPatchBtn" class="btn btn-blue">Applica Patch</button>
       </div>
     </div>
   </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
-
 <script>
-  let editor, lastContent = null, timer;
-
+  let editor;
+  let lastContentBeforePatch = null;
+  const STORAGE_KEY = 'html_playground_content';
+  
   window.onload = function() {
     editor = CodeMirror.fromTextArea(document.getElementById("code"), {
-      mode: "htmlmixed", theme: "neo", lineNumbers: true, lineWrapping: true
+      mode: "htmlmixed",
+      theme: "neo",
+      lineNumbers: true,
+      lineWrapping: true,
+      viewportMargin: Infinity,
+      autofocus: true
     });
 
-    const saved = localStorage.getItem('html_pro_final');
-    editor.setValue(saved || `<!DOCTYPE html><html><body><h1>Test Patch</h1><p>Prova a cambiare questo testo usando il tool patch.</p></body></html>`);
-    
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if(saved) {
+      editor.setValue(saved);
+    } else {
+      editor.setValue(getDefaultTemplate());
+    }
+
     editor.on("change", () => {
-      document.getElementById('saveStatus').textContent = 'Salvataggio...';
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        localStorage.setItem('html_pro_final', editor.getValue());
-        document.getElementById('saveStatus').textContent = 'Salvato';
-        updatePreview();
-      }, 800);
+      saveToStorage();
+      debouncedPreview();
     });
 
     updatePreview();
     setupResizer();
   };
 
-  function showFeedback(btn, text) {
-    const layer = btn.querySelector('.feedback-layer');
-    if(layer) {
-      layer.textContent = text;
-      btn.classList.add('notifying');
-      setTimeout(() => btn.classList.remove('notifying'), 1500);
-    }
+  function getDefaultTemplate() {
+    return `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: sans-serif; padding: 20px; color: #333; }\n    h1 { color: #0146bc; }\n    .card { background: #eee; padding: 15px; border-radius: 8px; }\n  </style>\n</head>\n<body>\n  <h1>Ciao Mondo!</h1>\n  <div class="card">\n    <p>Prova a modificare questo testo o lo stile CSS.</p>\n    <button onclick="console.log('Click bottone: ' + new Date().toLocaleTimeString())">\n      Testa Console\n    </button>\n  </div>\n</body>\n</html>`;
+  }
+
+  function saveToStorage() {
+    localStorage.setItem(STORAGE_KEY, editor.getValue());
+    const status = document.getElementById('saveStatus');
+    status.textContent = 'Salvando...';
+    setTimeout(() => status.textContent = 'Salvato', 500);
+  }
+
+  let debounceTimer;
+  function debouncedPreview() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(updatePreview, 600); // Ridotto tempo di attesa per maggiore reattività
   }
 
   function updatePreview() {
+    const previewFrame = document.getElementById('preview');
+    if (!previewFrame) return;
+
     const code = editor.getValue();
-    const inject = `<script>(function(){ 
-      const send = (t,a) => window.parent.postMessage({source:'pl-console',t,a:Array.from(a).map(String)},'*');
-      ['log','warn','error'].forEach(m => { console[m] = (...args) => send(m,args); });
-    })();<\/script>`;
-    document.getElementById('preview').srcdoc = code.includes('<head>') ? code.replace('<head>', '<head>' + inject) : inject + code;
+    const consoleInterceptor = `\n<script>\n(function(){\n  function send(type, args){\n    try { window.parent.postMessage({source: 'playground-console', type: type, args: Array.from(args).map(a => String(a))}, '*'); } catch(e){}\n  }\n  const originalLog = console.log; console.log = function(...args){ originalLog.apply(console, args); send('log', args); };\n  const originalWarn = console.warn; console.warn = function(...args){ originalWarn.apply(console, args); send('warn', args); };\n  const originalError = console.error; console.error = function(...args){ originalError.apply(console, args); send('error', args); };\n  window.onerror = function(msg, url, line){ send('error', [msg + " (Line: " + line + ")"]); };\n})();\n<\/script>\n`;
+    
+    // Regex robusta per trovare il tag <head> indipendentemente dal maiuscolo/minuscolo o attributi
+    let finalHtml;
+    const headRegex = /<head\b[^>]*>/i;
+    
+    if (headRegex.test(code)) {
+      finalHtml = code.replace(headRegex, (match) => match + consoleInterceptor);
+    } else {
+      // Se non c'è <head>, inietta lo script all'inizio del codice
+      finalHtml = consoleInterceptor + code;
+    }
+    
+    previewFrame.srcdoc = finalHtml;
   }
 
-  window.onmessage = (e) => {
-    if(e.data?.source === 'pl-console') {
+  const consoleOutput = document.getElementById('console-output');
+  window.addEventListener('message', (event) => {
+    if (event.data && event.data.source === 'playground-console') {
       const entry = document.createElement('div');
-      entry.className = `log-entry log-${e.data.t}`;
-      entry.textContent = `> ${e.data.a.join(' ')}`;
-      const out = document.getElementById('console-output');
-      out.appendChild(entry);
-      out.scrollTop = out.scrollHeight;
+      entry.className = `log-entry log-${event.data.type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString().split(' ')[0]}] > ${event.data.args.join(' ')}`;
+      consoleOutput.appendChild(entry);
+      consoleOutput.scrollTop = consoleOutput.scrollHeight;
+    }
+  });
+
+  document.getElementById('clearConsoleBtn').onclick = () => consoleOutput.innerHTML = '';
+
+  function showFeedback(btn, text) {
+    const fb = btn.querySelector('.feedback');
+    if(fb) {
+      fb.textContent = text;
+      btn.classList.add('loading');
+      setTimeout(() => btn.classList.remove('loading'), 1500);
+    }
+  }
+
+  document.getElementById('copyBtn').onclick = function() {
+    navigator.clipboard.writeText(editor.getValue());
+    showFeedback(this, 'Copiato!');
+  };
+
+  document.getElementById('newTabBtn').onclick = function() {
+    const blob = new Blob([editor.getValue()], {type: 'text/html'});
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  };
+
+  document.getElementById('findBtn').onclick = function() {
+    const query = document.getElementById('findInput').value;
+    if(!query) return;
+    let cursor = editor.getSearchCursor(query, editor.getCursor("to"));
+    if (!cursor.findNext()) {
+      cursor = editor.getSearchCursor(query, {line: 0, ch: 0});
+      if (!cursor.findNext()) { showFeedback(this, 'Nessun risultato'); return; }
+    }
+    editor.setSelection(cursor.from(), cursor.to());
+    const h = editor.getScrollInfo().clientHeight;
+    const coords = editor.charCoords(cursor.from(), "local");
+    editor.scrollTo(null, (coords.top + coords.bottom) / 2 - h / 2);
+    editor.focus();
+    showFeedback(this, 'Trovato');
+  };
+
+  document.getElementById('replaceBtn').onclick = function() {
+    const query = document.getElementById('findInput').value;
+    const replacement = document.getElementById('replaceInput').value;
+    if(editor.getSelection() === query) {
+      editor.replaceSelection(replacement);
+      document.getElementById('findBtn').click();
+    } else {
+      document.getElementById('findBtn').click();
     }
   };
 
-  // Toolbar Actions
-  document.getElementById('copyBtn').onclick = function() { navigator.clipboard.writeText(editor.getValue()); showFeedback(this, 'Copiato!'); };
-  document.getElementById('pasteBtn').onclick = async function() { editor.setValue(await navigator.clipboard.readText()); showFeedback(this, 'Incollato!'); };
-  document.getElementById('newTabBtn').onclick = () => { const w = window.open(); w.document.write(editor.getValue()); };
-  document.getElementById('refreshBtn').onclick = () => updatePreview();
-  document.getElementById('clearConsoleBtn').onclick = () => document.getElementById('console-output').innerHTML = '';
+  const patchModal = document.getElementById('patchModal');
+  const patchStatus = document.getElementById('patchStatus');
+  const undoPatchBtn = document.getElementById('undoPatchBtn');
+
+  document.getElementById('patchBtn').onclick = () => {
+    patchModal.style.display = 'flex';
+    patchStatus.textContent = '';
+    undoPatchBtn.style.display = 'none';
+  };
+
+  document.getElementById('closePatchBtn').onclick = () => patchModal.style.display = 'none';
+  
+  document.getElementById('applyPatchBtn').onclick = function() {
+    const oldCode = document.getElementById('patchOld').value;
+    const newCode = document.getElementById('patchNew').value;
+    const currentContent = editor.getValue();
+    
+    if (oldCode.trim() === "") {
+      patchStatus.style.color = "red";
+      patchStatus.textContent = "Errore: Inserisci il codice da trovare.";
+      return;
+    }
+
+    if(currentContent.includes(oldCode)) {
+      lastContentBeforePatch = currentContent;
+      editor.setValue(currentContent.replace(oldCode, newCode));
+      patchStatus.style.color = "green";
+      patchStatus.textContent = "✔ Patch applicata con successo!";
+      undoPatchBtn.style.display = 'inline-flex';
+      document.getElementById('patchOld').value = ''; 
+      document.getElementById('patchNew').value = '';
+    } else {
+      patchStatus.style.color = "red";
+      patchStatus.textContent = "✖ Blocco non trovato nel codice.";
+    }
+  };
+
+  undoPatchBtn.onclick = function() {
+    if(lastContentBeforePatch !== null) {
+      editor.setValue(lastContentBeforePatch);
+      lastContentBeforePatch = null;
+      patchStatus.style.color = "orange";
+      patchStatus.textContent = "Operazione annullata.";
+      this.style.display = 'none';
+    }
+  };
+
+  document.getElementById('clearBtn').onclick = () => confirm('Cancellare tutto?') && editor.setValue('');
+  document.getElementById('downloadBtn').onclick = function() {
+    const blob = new Blob([editor.getValue()], {type: 'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (document.getElementById('filename').value || 'progetto') + document.getElementById('fileExtension').value;
+    a.click();
+  };
   document.getElementById('importBtn').onclick = () => document.getElementById('fileInput').click();
   document.getElementById('fileInput').onchange = (e) => {
     const file = e.target.files[0];
@@ -240,70 +525,16 @@
     }
   };
 
-  document.getElementById('downloadBtn').onclick = function() {
-    const name = document.getElementById('filename').value || 'index';
-    let ext = document.getElementById('fileExtension').value;
-    if(ext === 'custom') ext = document.getElementById('customExt').value || '.txt';
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(new Blob([editor.getValue()], {type:'text/plain'}));
-    a.download = name + (ext.startsWith('.') ? ext : '.' + ext);
-    a.click();
-    showFeedback(this, 'Salvato!');
-  };
-
-  // AI Patch Logic
-  const modal = document.getElementById('patchModal');
-  const fb = document.getElementById('patchFeedback');
-
-  document.getElementById('patchBtn').onclick = () => modal.style.display = 'flex';
-  document.getElementById('closePatchBtn').onclick = () => modal.style.display = 'none';
-
-  document.getElementById('copyAIPromptBtn').onclick = function() {
-    const p = `Genera un array JSON per aggiornare il codice.\nFormato: [{"find": "codice esatto", "replace": "nuovo codice"}]\nSORGENTE:\n${editor.getValue()}\nRICHIESTA: [MODIFICA]`;
-    navigator.clipboard.writeText(p);
-    showFeedback(this, 'Copiato!');
-  };
-
-  document.getElementById('applyPatchBtn').onclick = function() {
-    lastContent = editor.getValue();
-    let content = lastContent;
-
-    if(document.getElementById('pane-man').classList.contains('active')) {
-      const f = document.getElementById('patchOld').value, r = document.getElementById('patchNew').value;
-      if(f && content.includes(f)) { editor.setValue(content.split(f).join(r)); finishPatch('✔ Applicata!'); }
-      else failPatch('✖ Codice non trovato!');
-    } else {
-      let raw = document.getElementById('patchJSON').value.trim();
-      raw = raw.replace(/```json|```/g, "").trim();
-      try {
-        const patches = JSON.parse(raw);
-        patches.forEach(p => { if(content.includes(p.find)) content = content.split(p.find).join(p.replace); });
-        editor.setValue(content); finishPatch('✔ Patch AI riuscita!');
-      } catch(e) { failPatch('✖ JSON non valido!'); }
-    }
-  };
-
-  function finishPatch(m) { fb.style.color='green'; fb.textContent=m; document.getElementById('undoPatchBtn').style.display='inline-flex'; }
-  function failPatch(m) { fb.style.color='red'; fb.textContent=m; }
-  document.getElementById('undoPatchBtn').onclick = function() { if(lastContent) editor.setValue(lastContent); this.style.display='none'; };
-
-  function toggleCustomExt() { document.getElementById('customExt').style.display = (document.getElementById('fileExtension').value === 'custom') ? 'block' : 'none'; }
-  function switchTab(t) {
-    document.querySelectorAll('.patch-tab-btn, .tab-pane').forEach(el => el.classList.remove('active'));
-    document.getElementById(t === 'man' ? 'tabMan' : 'tabAI').classList.add('active');
-    document.getElementById(t === 'man' ? 'pane-man' : 'pane-ai').classList.add('active');
-  }
-
   function setupResizer() {
-    const res = document.getElementById('resizer'), pre = document.getElementById('panePreview'), ws = document.getElementById('workspace');
-    let active = false;
-    res.onmousedown = (e) => { active = true; document.body.style.cursor = 'col-resize'; e.preventDefault(); };
-    window.onmousemove = (e) => {
-      if(!active) return;
-      let w = window.innerWidth - e.clientX;
-      if(e.clientX > 200 && w > 200) { pre.style.width = w + 'px'; pre.style.flex = 'none'; }
+    const resizer = document.getElementById('resizer'), ep = document.getElementById('paneEditor'), pp = document.getElementById('panePreview');
+    let isResizing = false;
+    resizer.onmousedown = (e) => { isResizing = true; document.body.style.cursor = 'col-resize'; e.preventDefault(); };
+    document.onmousemove = (e) => {
+      if (!isResizing) return;
+      const w = document.getElementById('workspace').offsetWidth - e.clientX;
+      if (e.clientX > 300 && w > 300) { ep.style.flex = '1'; pp.style.width = w + 'px'; pp.style.flex = 'none'; }
     };
-    window.onmouseup = () => { active = false; document.body.style.cursor = 'default'; editor.refresh(); };
+    document.onmouseup = () => { isResizing = false; document.body.style.cursor = 'default'; editor.refresh(); };
   }
 </script>
 </body>
