@@ -19,7 +19,6 @@
       --text-light: #5f6f81;
       --border-color: #e0e0e0;
       --radius: 8px;
-      /* Font Coding più leggibile */
       --mono: "Fira Code", "JetBrains Mono", Consolas, monospace;
       --ui-font: Inter, system-ui, -apple-system, sans-serif;
     }
@@ -60,16 +59,14 @@
     h1{font-size: 18px; margin: 0; color: var(--brand-blue);}
     p.lead{margin: 0; color: var(--text-light); font-size: 12px;}
 
-    /* Layout Principale Resizable */
     .workspace {
       display: flex;
       flex: 1;
-      gap: 0; /* Gestito dal resizer */
+      gap: 0;
       overflow: hidden;
       min-height: 0;
     }
 
-    /* Colonna Sinistra: Editor */
     .pane-editor {
       flex: 1;
       display: flex;
@@ -81,7 +78,6 @@
       padding: 10px;
     }
 
-    /* Resizer Handle */
     .resizer {
       width: 12px;
       cursor: col-resize;
@@ -101,9 +97,8 @@
       border-radius: 2px;
     }
 
-    /* Colonna Destra: Anteprima + Console */
     .pane-preview {
-      width: 45%; /* Default start width */
+      width: 45%;
       display: flex;
       flex-direction: column;
       gap: 12px;
@@ -111,7 +106,7 @@
     }
 
     .preview-container {
-      flex: 2; /* Occupa più spazio della console */
+      flex: 2;
       background: var(--card);
       border-radius: var(--radius);
       border: 1px solid var(--border-color);
@@ -123,7 +118,7 @@
 
     .console-container {
       flex: 1;
-      background: #1e1e1e; /* Dark theme per console */
+      background: #1e1e1e;
       border-radius: var(--radius);
       border: 1px solid var(--text-dark);
       display: flex;
@@ -150,7 +145,6 @@
     .section-title h2{font-size: 14px; margin: 0; color: var(--brand-blue); display: flex; align-items: center; gap: 6px;}
     .console-container h2 { color: #ccc; }
 
-    /* CodeMirror Customization */
     .CodeMirror {
       height: 100%;
       font-family: var(--mono);
@@ -161,11 +155,9 @@
     }
     .cm-s-neo.CodeMirror { background: #fff; color: #222; }
 
-    /* Preview Iframe */
     .iframe-wrap { flex: 1; border: 1px solid var(--border-color); border-radius: 4px; background: #fff; position: relative;}
     iframe { width: 100%; height: 100%; border: 0; display: block; }
     
-    /* Console Output Styles */
     #console-output {
       flex: 1;
       overflow-y: auto;
@@ -180,13 +172,11 @@
     .log-error { color: #ff6b6b; }
     .log-info { color: #61afef; }
 
-    /* Controls */
     .search-controls { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
     .search-controls input { flex-grow: 1; padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px;}
     
     .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
     
-    /* Buttons */
     .btn{
       display: inline-flex; align-items: center; justify-content: center; gap: 6px;
       padding: 8px 12px; border-radius: 4px; border: 0; cursor: pointer;
@@ -199,6 +189,7 @@
     .btn-ghost{background: transparent; border: 1px solid var(--border-color); color: var(--brand-blue);}
     .btn-tiny { padding: 4px 8px; font-size: 11px; height: 24px; }
     .btn-dark { background: #333; color: #fff; border: 1px solid #444; }
+    .btn-danger { color: #ff6b6b; border: 1px solid #ff6b6b; background: transparent; }
     .btn svg { width: 14px; height: 14px; fill: currentColor; }
 
     .btn .feedback {
@@ -208,11 +199,9 @@
     .btn.loading .feedback { opacity: 1; }
     .btn.loading span:first-child { opacity: 0; }
 
-    /* File Inputs */
     .file-group { display: flex; gap: 4px; align-items: center; background: #fff; border: 1px solid var(--border-color); border-radius: 4px; padding: 2px; }
     .file-group input, .file-group select { border: none; font-size: 12px; padding: 4px; outline: none; background: transparent; }
     
-    /* Modal */
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
       display: none; align-items: center; justify-content: center; z-index: 999;
@@ -240,6 +229,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/search/searchcursor.min.js"></script>
 </head>
 <body>
 
@@ -322,6 +312,8 @@
       <h3 style="margin:0; color:var(--brand-blue)">Trova e Sostituisci Blocco</h3>
       <p class="lead">Incolla il blocco esatto da cercare e il nuovo codice da inserire.</p>
       
+      <div id="patchStatus" style="font-size: 13px; font-weight: bold; min-height: 20px;"></div>
+
       <div>
         <label>Codice da trovare (Vecchio):</label>
         <textarea id="patchOld" class="patch-area" spellcheck="false"></textarea>
@@ -332,19 +324,19 @@
       </div>
       
       <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px">
-        <button id="closePatchBtn" class="btn btn-ghost">Annulla</button>
+        <button id="undoPatchBtn" class="btn btn-danger btn-tiny" style="display:none">Annulla Patch</button>
+        <button id="closePatchBtn" class="btn btn-ghost">Chiudi</button>
         <button id="applyPatchBtn" class="btn btn-blue">Applica Patch</button>
       </div>
     </div>
   </div>
 
 <script>
-  // --- INIZIALIZZAZIONE ---
   let editor;
+  let lastContentBeforePatch = null;
   const STORAGE_KEY = 'html_playground_content';
   
   window.onload = function() {
-    // Setup CodeMirror
     editor = CodeMirror.fromTextArea(document.getElementById("code"), {
       mode: "htmlmixed",
       theme: "neo",
@@ -354,7 +346,6 @@
       autofocus: true
     });
 
-    // Carica da LocalStorage o Default
     const saved = localStorage.getItem(STORAGE_KEY);
     if(saved) {
       editor.setValue(saved);
@@ -362,46 +353,19 @@
       editor.setValue(getDefaultTemplate());
     }
 
-    // Eventi Editor
     editor.on("change", () => {
       saveToStorage();
       debouncedPreview();
     });
 
-    // Prima anteprima
     updatePreview();
     setupResizer();
   };
 
   function getDefaultTemplate() {
-    return `<!DOCTYPE html>
-<html>
-<head>
-  <style>
-    body { font-family: sans-serif; padding: 20px; color: #333; }
-    h1 { color: #0146bc; }
-    .card { background: #eee; padding: 15px; border-radius: 8px; }
-  </style>
-</head>
-<body>
-  <h1>Ciao Mondo!</h1>
-  <div class="card">
-    <p>Prova a modificare questo testo o lo stile CSS.</p>
-    <button onclick="console.log('Click bottone: ' + new Date().toLocaleTimeString())">
-      Testa Console
-    </button>
-  </div>
-  
-  <script>
-    console.log("App pronta! Prova a causare un errore...");
-    // throw new Error("Errore di prova"); 
-  <\/script>
-</body>
-</html>`;
+    return `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    body { font-family: sans-serif; padding: 20px; color: #333; }\n    h1 { color: #0146bc; }\n    .card { background: #eee; padding: 15px; border-radius: 8px; }\n  </style>\n</head>\n<body>\n  <h1>Ciao Mondo!</h1>\n  <div class="card">\n    <p>Prova a modificare questo testo o lo stile CSS.</p>\n    <button onclick="console.log('Click bottone: ' + new Date().toLocaleTimeString())">\n      Testa Console\n    </button>\n  </div>\n</body>\n</html>`;
   }
 
-  // --- LOGICA SALVATAGGIO & PREVIEW ---
-  
   function saveToStorage() {
     localStorage.setItem(STORAGE_KEY, editor.getValue());
     const status = document.getElementById('saveStatus');
@@ -409,79 +373,49 @@
     setTimeout(() => status.textContent = 'Salvato', 500);
   }
 
-  // Debounce per non aggiornare l'iframe ad ogni singolo tasto
   let debounceTimer;
   function debouncedPreview() {
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(updatePreview, 1000); // 1 secondo di ritardo
+    debounceTimer = setTimeout(updatePreview, 600); // Ridotto tempo di attesa per maggiore reattività
   }
 
   function updatePreview() {
     const previewFrame = document.getElementById('preview');
-    const code = editor.getValue();
-    
-    // Script per intercettare la console dentro l'iframe
-    const consoleInterceptor = `
-      <script>
-        (function(){
-          function send(type, args){
-            try {
-              window.parent.postMessage({
-                source: 'playground-console',
-                type: type,
-                args: Array.from(args).map(a => String(a))
-              }, '*');
-            } catch(e){}
-          }
-          const originalLog = console.log;
-          const originalWarn = console.warn;
-          const originalError = console.error;
-          
-          console.log = function(...args){ originalLog.apply(console, args); send('log', args); };
-          console.warn = function(...args){ originalWarn.apply(console, args); send('warn', args); };
-          console.error = function(...args){ originalError.apply(console, args); send('error', args); };
-          
-          window.onerror = function(msg, url, line){
-            send('error', [msg + " (Line: " + line + ")"]);
-          };
-        })();
-      <\/script>
-    `;
+    if (!previewFrame) return;
 
-    // Inietta script console prima di tutto
-    const finalHtml = code.replace('<head>', '<head>' + consoleInterceptor);
+    const code = editor.getValue();
+    const consoleInterceptor = `\n<script>\n(function(){\n  function send(type, args){\n    try { window.parent.postMessage({source: 'playground-console', type: type, args: Array.from(args).map(a => String(a))}, '*'); } catch(e){}\n  }\n  const originalLog = console.log; console.log = function(...args){ originalLog.apply(console, args); send('log', args); };\n  const originalWarn = console.warn; console.warn = function(...args){ originalWarn.apply(console, args); send('warn', args); };\n  const originalError = console.error; console.error = function(...args){ originalError.apply(console, args); send('error', args); };\n  window.onerror = function(msg, url, line){ send('error', [msg + " (Line: " + line + ")"]); };\n})();\n<\/script>\n`;
+    
+    // Regex robusta per trovare il tag <head> indipendentemente dal maiuscolo/minuscolo o attributi
+    let finalHtml;
+    const headRegex = /<head\b[^>]*>/i;
+    
+    if (headRegex.test(code)) {
+      finalHtml = code.replace(headRegex, (match) => match + consoleInterceptor);
+    } else {
+      // Se non c'è <head>, inietta lo script all'inizio del codice
+      finalHtml = consoleInterceptor + code;
+    }
     
     previewFrame.srcdoc = finalHtml;
   }
 
-  // --- GESTIONE CONSOLE UI ---
   const consoleOutput = document.getElementById('console-output');
-  
   window.addEventListener('message', (event) => {
     if (event.data && event.data.source === 'playground-console') {
-      addConsoleLog(event.data.type, event.data.args);
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${event.data.type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString().split(' ')[0]}] > ${event.data.args.join(' ')}`;
+      consoleOutput.appendChild(entry);
+      consoleOutput.scrollTop = consoleOutput.scrollHeight;
     }
   });
 
-  function addConsoleLog(type, args) {
-    const entry = document.createElement('div');
-    entry.className = `log-entry log-${type}`;
-    const time = new Date().toLocaleTimeString().split(' ')[0];
-    entry.textContent = `[${time}] > ${args.join(' ')}`;
-    consoleOutput.appendChild(entry);
-    consoleOutput.scrollTop = consoleOutput.scrollHeight;
-  }
-
-  document.getElementById('clearConsoleBtn').onclick = () => {
-    consoleOutput.innerHTML = '<div style="color:#666;font-style:italic">Console pulita.</div>';
-  };
-
-  // --- FUNZIONI TOOLBAR ---
+  document.getElementById('clearConsoleBtn').onclick = () => consoleOutput.innerHTML = '';
 
   function showFeedback(btn, text) {
     const fb = btn.querySelector('.feedback');
-    const orig = btn.querySelector('span:first-child');
-    if(fb && orig) {
+    if(fb) {
       fb.textContent = text;
       btn.classList.add('loading');
       setTimeout(() => btn.classList.remove('loading'), 1500);
@@ -493,76 +427,26 @@
     showFeedback(this, 'Copiato!');
   };
 
-  document.getElementById('pasteBtn').onclick = async function() {
-    try {
-      const text = await navigator.clipboard.readText();
-      editor.setValue(text);
-      showFeedback(this, 'Incollato!');
-    } catch(e) { alert('Impossibile accedere appunti'); }
-  };
-
-  document.getElementById('clearBtn').onclick = function() {
-    if(confirm('Cancellare tutto il codice?')) editor.setValue('');
-  };
-
-  document.getElementById('refreshBtn').onclick = function() {
-    updatePreview();
-    showFeedback(this, 'Aggiornato');
-  };
-  
   document.getElementById('newTabBtn').onclick = function() {
     const blob = new Blob([editor.getValue()], {type: 'text/html'});
-    window.open(URL.createObjectURL(blob), '_blank');
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
   };
 
-  // Import / Export
-  document.getElementById('downloadBtn').onclick = function() {
-    const name = document.getElementById('filename').value || 'file';
-    const ext = document.getElementById('fileExtension').value;
-    const blob = new Blob([editor.getValue()], {type: 'text/plain'});
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = name + ext;
-    a.click();
-    showFeedback(this, 'Scaricato');
-  };
-
-  document.getElementById('importBtn').onclick = () => document.getElementById('fileInput').click();
-  document.getElementById('fileInput').onchange = function(e) {
-    const file = e.target.files[0];
-    if(!file) return;
-    const reader = new FileReader();
-    reader.onload = (e) => editor.setValue(e.target.result);
-    reader.readAsText(file);
-    this.value = null; 
-  };
-
-  // --- CERCA E SOSTITUISCI (Base) ---
-  // Nota: CodeMirror ha i suoi plugin di ricerca avanzata, ma usiamo una logica custom semplice qui
-  // per mantenere coerenza con l'interfaccia esistente.
-  
-  let searchCursor = null;
   document.getElementById('findBtn').onclick = function() {
     const query = document.getElementById('findInput').value;
     if(!query) return;
-    
-    // Cerca dal cursore corrente
-    const cursor = editor.getSearchCursor(query, editor.getCursor());
+    let cursor = editor.getSearchCursor(query, editor.getCursor("to"));
     if (!cursor.findNext()) {
-      // Se non trova, ricomincia dall'inizio
-      const fromStart = editor.getSearchCursor(query, {line:0, ch:0});
-      if(fromStart.findNext()){
-        editor.setSelection(fromStart.from(), fromStart.to());
-        editor.scrollIntoView({from: fromStart.from(), to: fromStart.to()}, 20);
-        showFeedback(this, 'Trovato');
-      } else {
-        showFeedback(this, 'Non trovato');
-      }
-    } else {
-      editor.setSelection(cursor.from(), cursor.to());
-      editor.scrollIntoView({from: cursor.from(), to: cursor.to()}, 20);
-      showFeedback(this, 'Trovato');
+      cursor = editor.getSearchCursor(query, {line: 0, ch: 0});
+      if (!cursor.findNext()) { showFeedback(this, 'Nessun risultato'); return; }
     }
+    editor.setSelection(cursor.from(), cursor.to());
+    const h = editor.getScrollInfo().clientHeight;
+    const coords = editor.charCoords(cursor.from(), "local");
+    editor.scrollTo(null, (coords.top + coords.bottom) / 2 - h / 2);
+    editor.focus();
+    showFeedback(this, 'Trovato');
   };
 
   document.getElementById('replaceBtn').onclick = function() {
@@ -570,28 +454,22 @@
     const replacement = document.getElementById('replaceInput').value;
     if(editor.getSelection() === query) {
       editor.replaceSelection(replacement);
-      document.getElementById('findBtn').click(); // Trova il prossimo
+      document.getElementById('findBtn').click();
     } else {
       document.getElementById('findBtn').click();
     }
   };
-  
-  document.getElementById('replaceAllBtn').onclick = function() {
-    const query = document.getElementById('findInput').value;
-    const repl = document.getElementById('replaceInput').value;
-    const content = editor.getValue();
-    const newContent = content.replaceAll(query, repl);
-    if(content !== newContent) {
-      editor.setValue(newContent);
-      showFeedback(this, 'Fatto');
-    } else {
-      showFeedback(this, 'Nessuna occorrenza');
-    }
+
+  const patchModal = document.getElementById('patchModal');
+  const patchStatus = document.getElementById('patchStatus');
+  const undoPatchBtn = document.getElementById('undoPatchBtn');
+
+  document.getElementById('patchBtn').onclick = () => {
+    patchModal.style.display = 'flex';
+    patchStatus.textContent = '';
+    undoPatchBtn.style.display = 'none';
   };
 
-  // --- MODALE PATCH ---
-  const patchModal = document.getElementById('patchModal');
-  document.getElementById('patchBtn').onclick = () => patchModal.style.display = 'flex';
   document.getElementById('closePatchBtn').onclick = () => patchModal.style.display = 'none';
   
   document.getElementById('applyPatchBtn').onclick = function() {
@@ -599,58 +477,65 @@
     const newCode = document.getElementById('patchNew').value;
     const currentContent = editor.getValue();
     
-    if(currentContent.includes(oldCode) && oldCode.trim() !== "") {
-      const patchedContent = currentContent.replace(oldCode, newCode);
-      editor.setValue(patchedContent);
-      patchModal.style.display = 'none';
+    if (oldCode.trim() === "") {
+      patchStatus.style.color = "red";
+      patchStatus.textContent = "Errore: Inserisci il codice da trovare.";
+      return;
+    }
+
+    if(currentContent.includes(oldCode)) {
+      lastContentBeforePatch = currentContent;
+      editor.setValue(currentContent.replace(oldCode, newCode));
+      patchStatus.style.color = "green";
+      patchStatus.textContent = "✔ Patch applicata con successo!";
+      undoPatchBtn.style.display = 'inline-flex';
       document.getElementById('patchOld').value = ''; 
       document.getElementById('patchNew').value = '';
     } else {
-      alert("Blocco di codice 'Vecchio' non trovato esattamente nel testo.");
+      patchStatus.style.color = "red";
+      patchStatus.textContent = "✖ Blocco non trovato nel codice.";
     }
   };
 
-  // --- RESIZER LOGIC ---
+  undoPatchBtn.onclick = function() {
+    if(lastContentBeforePatch !== null) {
+      editor.setValue(lastContentBeforePatch);
+      lastContentBeforePatch = null;
+      patchStatus.style.color = "orange";
+      patchStatus.textContent = "Operazione annullata.";
+      this.style.display = 'none';
+    }
+  };
+
+  document.getElementById('clearBtn').onclick = () => confirm('Cancellare tutto?') && editor.setValue('');
+  document.getElementById('downloadBtn').onclick = function() {
+    const blob = new Blob([editor.getValue()], {type: 'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = (document.getElementById('filename').value || 'progetto') + document.getElementById('fileExtension').value;
+    a.click();
+  };
+  document.getElementById('importBtn').onclick = () => document.getElementById('fileInput').click();
+  document.getElementById('fileInput').onchange = (e) => {
+    const file = e.target.files[0];
+    if(file) {
+      const reader = new FileReader();
+      reader.onload = (ev) => editor.setValue(ev.target.result);
+      reader.readAsText(file);
+    }
+  };
+
   function setupResizer() {
-    const resizer = document.getElementById('resizer');
-    const editorPane = document.getElementById('paneEditor');
-    const previewPane = document.getElementById('panePreview');
-    
+    const resizer = document.getElementById('resizer'), ep = document.getElementById('paneEditor'), pp = document.getElementById('panePreview');
     let isResizing = false;
-
-    resizer.addEventListener('mousedown', (e) => {
-      isResizing = true;
-      resizer.classList.add('active');
-      document.body.style.cursor = 'col-resize';
-      e.preventDefault(); // Evita selezione testo
-    });
-
-    document.addEventListener('mousemove', (e) => {
+    resizer.onmousedown = (e) => { isResizing = true; document.body.style.cursor = 'col-resize'; e.preventDefault(); };
+    document.onmousemove = (e) => {
       if (!isResizing) return;
-      
-      const containerWidth = document.getElementById('workspace').offsetWidth;
-      // Calcola larghezza in percentuale per il pane di destra
-      const newPreviewWidth = containerWidth - e.clientX;
-      
-      // Limiti minimi (300px)
-      if (e.clientX > 300 && newPreviewWidth > 300) {
-        // Usiamo flex-basis per ridimensionare
-        editorPane.style.flex = `1`; // Editor prende resto
-        previewPane.style.width = `${newPreviewWidth}px`;
-        previewPane.style.flex = `none`;
-      }
-    });
-
-    document.addEventListener('mouseup', () => {
-      if(isResizing) {
-        isResizing = false;
-        resizer.classList.remove('active');
-        document.body.style.cursor = 'default';
-        editor.refresh(); // CodeMirror fix resize
-      }
-    });
+      const w = document.getElementById('workspace').offsetWidth - e.clientX;
+      if (e.clientX > 300 && w > 300) { ep.style.flex = '1'; pp.style.width = w + 'px'; pp.style.flex = 'none'; }
+    };
+    document.onmouseup = () => { isResizing = false; document.body.style.cursor = 'default'; editor.refresh(); };
   }
-
 </script>
 </body>
 </html>
