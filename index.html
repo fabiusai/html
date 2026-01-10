@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>HTML Playground Pro + AI Tools</title>
+  <title>HTML Playground Pro + AI Tools 2.0</title>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/neo.min.css">
@@ -12,7 +12,7 @@
     :root{
       --brand-blue: #0146bc;
       --brand-yellow: #eddc01;
-      --brand-purple: #8a2be2; /* Nuovo colore per tool AI */
+      --brand-purple: #8a2be2; 
       --brand-blue-dark: #00338a;
       --bg: #f5f5f5;
       --card: #ffffff;
@@ -187,7 +187,7 @@
     .btn:hover { filter: brightness(0.95); }
     .btn-blue{background: var(--brand-blue); color: white;}
     .btn-yellow{background: var(--brand-yellow); color: var(--brand-blue-dark);}
-    .btn-purple{background: var(--brand-purple); color: white;} /* Nuovo stile bottone AI */
+    .btn-purple{background: var(--brand-purple); color: white;} 
     .btn-ghost{background: transparent; border: 1px solid var(--border-color); color: var(--brand-blue);}
     .btn-tiny { padding: 4px 8px; font-size: 11px; height: 24px; }
     .btn-dark { background: #333; color: #fff; border: 1px solid #444; }
@@ -355,23 +355,23 @@
 
   <div id="aiModal" class="modal-overlay">
     <div class="modal-content">
-      <h3 style="margin:0; color:var(--brand-purple)">AI Multi-Patch Tool</h3>
-      <p class="lead">Genera istruzioni per l'AI e applica modifiche multiple via JSON.</p>
+      <h3 style="margin:0; color:var(--brand-purple)">AI Multi-Patch Tool 2.0</h3>
+      <p class="lead">Applica modifiche multiple generate dall'AI usando il formato a Blocchi.</p>
       
       <div class="ai-step">
         <h4>1. Istruisci l'AI <button id="copyPromptBtn" class="btn btn-tiny btn-purple">Copia Prompt</button></h4>
-        <p style="font-size:12px; margin:0; color:#666;">Copia questo prompt e incollalo su ChatGPT/Claude. Chiedi le modifiche che desideri. L'AI genererà un JSON perfetto per questo tool.</p>
+        <p style="font-size:12px; margin:0; color:#666;">Copia questo prompt. Chiedi all'AI le modifiche. L'AI userà un formato speciale (SEARCH/REPLACE) che evita errori di sintassi.</p>
       </div>
 
       <div class="ai-step">
-        <h4>2. Incolla JSON <span style="font-size:11px; font-weight:normal; color:#888;">(o trascina file .json qui)</span></h4>
-        <textarea id="jsonInput" class="patch-area" placeholder='Incolla qui il JSON generato dall&apos;AI. Es: [{"find": "...", "replace": "..."}]' spellcheck="false"></textarea>
+        <h4>2. Incolla Risposta AI <span style="font-size:11px; font-weight:normal; color:#888;">(o trascina testo qui)</span></h4>
+        <textarea id="aiInput" class="patch-area" placeholder="Incolla qui la risposta dell'AI contenente i blocchi <<<<<<<< SEARCH..." spellcheck="false"></textarea>
         <div id="aiLog" class="ai-log"></div>
       </div>
 
       <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:0px">
         <button id="closeAiBtn" class="btn btn-ghost">Chiudi</button>
-        <button id="applyJsonBtn" class="btn btn-purple">Applica Modifiche JSON</button>
+        <button id="applyAiBtn" class="btn btn-purple">Applica Modifiche AI</button>
       </div>
     </div>
   </div>
@@ -566,7 +566,7 @@
     }
   };
 
-  // --- LOGICA NUOVA MODALE AI TOOLS ---
+  // --- LOGICA NUOVA MODALE AI TOOLS 2.0 (Block Format) ---
   const aiModal = document.getElementById('aiModal');
   const aiLog = document.getElementById('aiLog');
 
@@ -574,46 +574,45 @@
     aiModal.style.display = 'flex';
     aiLog.style.display = 'none';
     aiLog.innerHTML = '';
-    document.getElementById('jsonInput').value = '';
+    document.getElementById('aiInput').value = '';
   };
   
   document.getElementById('closeAiBtn').onclick = () => aiModal.style.display = 'none';
 
-  // 1. GENERATORE DI PROMPT "A PROVA DI BOMBA" (AGGIORNATO)
+  // 1. GENERATORE DI PROMPT CON BLOCCHI DELIMITATI
   document.getElementById('copyPromptBtn').onclick = function() {
     const currentCode = editor.getValue();
-    const prompt = `SEI UN SISTEMA DI PATCH JSON "STRICT MODE".
-Il tuo obiettivo NON è refactorizzare il codice, ma generare un JSON per una sostituzione di stringhe esatta (String.replace).
+    const prompt = `Agisci come un esperto motore di refactoring. Ho bisogno di modificare il codice seguente.
+Analizza la richiesta e restituisci le modifiche usando ESCLUSIVAMENTE il formato a blocchi descritto sotto.
 
-REGOLE DI SOPRAVVIVENZA (LEGGI ATTENTAMENTE):
-1. COPIA FORENSE: Il campo "find" deve essere una copia esatta al 100% dal sorgente. Se nel sorgente ci sono 4 spazi, tu metti 4 spazi. Se c'è un tab, tu metti un tab. NON correggere l'indentazione.
-2. NO MARKDOWN: Restituisci SOLO l'array JSON grezzo [ ... ]. Niente \`\`\`json.
-3. UNICITÀ: Assicurati che il blocco "find" sia abbastanza lungo da essere unico nel file, ma non copiare l'intero file.
+FORMATO RISPOSTA (Obbligatorio per ogni modifica):
+<<<<<<<< SEARCH
+[Incolla qui il blocco di codice ORIGINALE che deve essere sostituito. Deve combaciare ESATTAMENTE, inclusi spazi.]
+========
+[Incolla qui il NUOVO codice modificato che prenderà il posto del vecchio.]
+>>>>>>>>
 
-FORMATO RISPOSTA:
-[
-  {
-    "find": "    <div class=\"vecchio\">",  <-- NOTA GLI SPAZI INIZIALI COPIATI ESATTAMENTE
-    "replace": "    <div class=\"nuovo\">"
-  }
-]
+REGOLE CRITICHE:
+1. NON usare JSON o Markdown (niente \`\`\`). Restituisci testo grezzo.
+2. Il blocco SEARCH deve esistere nel codice sorgente esattamente come scritto.
+3. Se ci sono più modifiche, metti i blocchi uno dopo l'altro.
+4. Assicurati che i delimitatori (<<<<<<<< SEARCH, =======, >>>>>>>>) siano su righe separate.
 
-CODICE SORGENTE TARGET:
+Ecco il CODICE SORGENTE attuale:
 ---
 ${currentCode}
 ---
 
-ISTRUZIONI PER LA MODIFICA:
-`;
+ATTENDO ISTRUZIONI SULLE MODIFICHE...`;
 
     navigator.clipboard.writeText(prompt);
-    showFeedback(this, 'Prompt Ottimizzato!');
-    alert("Prompt Strict-Mode copiato!\n\nIncollalo nella tua AI. Questo prompt forza l'AI a rispettare rigorosamente gli spazi e l'indentazione del tuo codice.");
+    showFeedback(this, 'Prompt Copiato!');
+    alert("Prompt copiato!\n\nIncollalo nella tua AI e chiedi le modifiche. L'AI risponderà con blocchi speciali che questo tool può leggere.");
   };
 
-  // 2. APPLICAZIONE PATCH DA JSON
-  document.getElementById('applyJsonBtn').onclick = function() {
-    const jsonStr = document.getElementById('jsonInput').value;
+  // 2. APPLICAZIONE PATCH DA BLOCCHI (NO JSON)
+  document.getElementById('applyAiBtn').onclick = function() {
+    const rawInput = document.getElementById('aiInput').value;
     aiLog.style.display = 'block';
     aiLog.innerHTML = '';
     
@@ -624,18 +623,24 @@ ISTRUZIONI PER LA MODIFICA:
       aiLog.appendChild(div);
     }
 
-    let patches;
-    try {
-      // Rimuove eventuali blocchi markdown se l'utente li ha copiati per sbaglio
-      const cleanJson = jsonStr.replace(/```json/g, '').replace(/```/g, '').trim();
-      patches = JSON.parse(cleanJson);
-    } catch(e) {
-      log("Errore critico: JSON non valido. Assicurati che l'AI abbia fornito solo JSON.", "error");
-      return;
+    // Regex per trovare i blocchi: 
+    // Cattura tutto tra SEARCH e ======= (Gruppo 1: Find)
+    // Cattura tutto tra ======= e >>>>>>>> (Gruppo 2: Replace)
+    const regex = /<<<<<<<< SEARCH\s*([\s\S]*?)\s*========\s*([\s\S]*?)\s*>>>>>>>>/g;
+    
+    let match;
+    let patches = [];
+    
+    // Estrazione patches
+    while ((match = regex.exec(rawInput)) !== null) {
+      patches.push({
+        find: match[1], // Manteniamo gli spazi interni, il trim viene fatto dopo se necessario
+        replace: match[2]
+      });
     }
 
-    if (!Array.isArray(patches)) {
-      log("Errore: Il JSON deve essere un array [ ... ].", "error");
+    if (patches.length === 0) {
+      log("Errore: Nessun blocco valido trovato. Controlla che l'AI abbia usato <<<<<<<< SEARCH ...", "error");
       return;
     }
 
@@ -643,23 +648,23 @@ ISTRUZIONI PER LA MODIFICA:
     let appliedCount = 0;
     let failedCount = 0;
 
-    log(`Inizio elaborazione di ${patches.length} modifiche...`);
+    log(`Trovati ${patches.length} blocchi di modifica. Elaborazione...`);
 
     patches.forEach((patch, index) => {
-      if (!patch.find || patch.replace === undefined) {
-        log(`Patch #${index+1} ignorata: Struttura non valida (manca find o replace).`, "error");
-        failedCount++;
-        return;
-      }
+      // Pulizia leggera: rimuove solo il primo newline se generato dal delimitatore, ma mantiene l'indentazione
+      // Spesso l'AI fa: <<<<<<<< SEARCH\n  <div>...
+      // Vogliamo cercare "  <div>..."
+      const cleanFind = patch.find.replace(/^\n/, '').replace(/\n$/, '');
+      const cleanReplace = patch.replace.replace(/^\n/, '').replace(/\n$/, '');
 
-      if (content.includes(patch.find)) {
-        content = content.replace(patch.find, patch.replace);
+      if (content.includes(cleanFind)) {
+        content = content.replace(cleanFind, cleanReplace);
         log(`Patch #${index+1}: Applicata con successo.`, "success");
         appliedCount++;
       } else {
-        log(`Patch #${index+1}: FALLITA. Codice originale non trovato. Verifica spazi e indentazione.`, "error");
-        // Logga i primi caratteri per debug visivo
-        console.log("Expected to find:", patch.find);
+        log(`Patch #${index+1}: FALLITA. Codice originale non trovato.`, "error");
+        // Tentativo di debug per l'utente
+        console.log("Expected to find:", cleanFind);
         failedCount++;
       }
     });
@@ -669,12 +674,12 @@ ISTRUZIONI PER LA MODIFICA:
       log(`COMPLETATO: ${appliedCount} modifiche applicate.`, "success");
       saveToStorage();
     } else {
-      log("NESSUNA modifica applicata.", "error");
+      log("Nessuna modifica applicata. Verifica che l'AI abbia copiato il codice esatto.", "error");
     }
   };
 
-  // Supporto per trascinamento file JSON nella textarea
-  const dropArea = document.getElementById('jsonInput');
+  // Supporto per trascinamento file
+  const dropArea = document.getElementById('aiInput');
   dropArea.addEventListener('dragover', (e) => { e.stopPropagation(); e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; dropArea.style.borderColor = 'var(--brand-purple)'; });
   dropArea.addEventListener('dragleave', (e) => { dropArea.style.borderColor = 'var(--border-color)'; });
   dropArea.addEventListener('drop', (e) => {
@@ -683,7 +688,7 @@ ISTRUZIONI PER LA MODIFICA:
     const file = e.dataTransfer.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (evt) => { document.getElementById('jsonInput').value = evt.target.result; };
+      reader.onload = (evt) => { document.getElementById('aiInput').value = evt.target.result; };
       reader.readAsText(file);
     }
   });
