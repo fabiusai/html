@@ -579,35 +579,36 @@
   
   document.getElementById('closeAiBtn').onclick = () => aiModal.style.display = 'none';
 
-  // 1. GENERATORE DI PROMPT "A PROVA DI BOMBA"
+  // 1. GENERATORE DI PROMPT "A PROVA DI BOMBA" (AGGIORNATO)
   document.getElementById('copyPromptBtn').onclick = function() {
     const currentCode = editor.getValue();
-    const prompt = `Agisci come un esperto motore di refactoring del codice. Ho bisogno di aggiornare il seguente codice HTML/JS/CSS.
-Il tuo compito è analizzare la mia richiesta e restituire ESCLUSIVAMENTE un array JSON valido contenente le modifiche, senza alcun testo introduttivo, markdown o spiegazioni.
+    const prompt = `SEI UN SISTEMA DI PATCH JSON "STRICT MODE".
+Il tuo obiettivo NON è refactorizzare il codice, ma generare un JSON per una sostituzione di stringhe esatta (String.replace).
 
-FORMATO JSON RICHIESTO:
+REGOLE DI SOPRAVVIVENZA (LEGGI ATTENTAMENTE):
+1. COPIA FORENSE: Il campo "find" deve essere una copia esatta al 100% dal sorgente. Se nel sorgente ci sono 4 spazi, tu metti 4 spazi. Se c'è un tab, tu metti un tab. NON correggere l'indentazione.
+2. NO MARKDOWN: Restituisci SOLO l'array JSON grezzo [ ... ]. Niente \`\`\`json.
+3. UNICITÀ: Assicurati che il blocco "find" sia abbastanza lungo da essere unico nel file, ma non copiare l'intero file.
+
+FORMATO RISPOSTA:
 [
   {
-    "find": "STRINGA_ESATTA_DEL_CODICE_DA_SOSTITUIRE",
-    "replace": "NUOVO_CODICE_AGGIORNATO"
+    "find": "    <div class=\"vecchio\">",  <-- NOTA GLI SPAZI INIZIALI COPIATI ESATTAMENTE
+    "replace": "    <div class=\"nuovo\">"
   }
 ]
 
-REGOLE TASSATIVE (pena il fallimento dello script):
-1. Il campo "find" deve contenere un blocco di codice ESATTO, copiato carattere per carattere dal codice sorgente che ti fornirò sotto (inclusi spazi, ritorni a capo e indentazione). NON normalizzare gli spazi.
-2. Restituisci SOLO il JSON puro. Se includi markdown come \`\`\`json, lo script fallirà.
-3. Se devi fare più modifiche in punti diversi, aggiungi più oggetti all'array.
-
-Ecco il CODICE SORGENTE attuale:
+CODICE SORGENTE TARGET:
 ---
 ${currentCode}
 ---
 
-ATTENDERE ISTRUZIONI SULLE MODIFICHE DA APPORTARE...`;
+ISTRUZIONI PER LA MODIFICA:
+`;
 
     navigator.clipboard.writeText(prompt);
-    showFeedback(this, 'Prompt Copiato!');
-    alert("Prompt copiato negli appunti!\n\nAdesso incollalo nella tua AI preferita (ChatGPT, Claude, etc) e aggiungi alla fine la descrizione delle modifiche che vuoi fare.");
+    showFeedback(this, 'Prompt Ottimizzato!');
+    alert("Prompt Strict-Mode copiato!\n\nIncollalo nella tua AI. Questo prompt forza l'AI a rispettare rigorosamente gli spazi e l'indentazione del tuo codice.");
   };
 
   // 2. APPLICAZIONE PATCH DA JSON
