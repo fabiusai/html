@@ -273,6 +273,7 @@
       <div class="toolbar">
         <button id="copyBtn" class="btn btn-yellow"><span>Copia</span><span class="feedback"></span></button>
         <button id="pasteBtn" class="btn btn-ghost"><span>Incolla</span><span class="feedback"></span></button>
+        <button id="importBtn" class="btn btn-ghost" title="Importa File"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></button>
         <button id="clearBtn" class="btn btn-ghost"><span>Pulisci</span><span class="feedback"></span></button>
         <button id="patchBtn" class="btn btn-ghost"><span>Patch</span><span class="feedback"></span></button>
         <button id="aiToolBtn" class="btn btn-purple"><span>AI Patch</span><span class="feedback"></span></button>
@@ -295,7 +296,6 @@
         </div>
         <button id="downloadBtn" class="btn btn-blue"><span>Salva File</span><span class="feedback"></span></button>
         <input type="file" id="fileInput" style="display:none">
-        <button id="importBtn" class="btn btn-ghost"><span>Importa</span></button>
       </div>
     </div>
 
@@ -472,6 +472,17 @@
   document.getElementById('copyBtn').onclick = function() {
     navigator.clipboard.writeText(editor.getValue());
     showFeedback(this, 'Copiato!');
+  };
+
+  document.getElementById('pasteBtn').onclick = async function() {
+    try {
+      const text = await navigator.clipboard.readText();
+      editor.replaceSelection(text);
+      showFeedback(this, 'Incollato!');
+    } catch (err) {
+      console.error(err);
+      alert('Impossibile accedere agli appunti. Consenti l\'accesso o usa Ctrl+V.');
+    }
   };
 
   document.getElementById('newTabBtn').onclick = function() {
