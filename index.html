@@ -269,7 +269,17 @@
         
         <div class="file-group">
           <input type="text" id="filename" value="progetto" placeholder="Nome file" style="width:80px">
-          <select id="fileExtension"><option value=".html">.html</option><option value=".txt">.txt</option></select>
+          <select id="fileExtension">
+            <option value=".html">.html</option>
+            <option value=".css">.css</option>
+            <option value=".js">.js</option>
+            <option value=".json">.json</option>
+            <option value=".xml">.xml</option>
+            <option value=".svg">.svg</option>
+            <option value=".txt">.txt</option>
+            <option value="custom" style="font-weight: bold; color: var(--brand-blue)">Custom...</option>
+          </select>
+          <input type="text" id="customExtInput" placeholder=".ext" style="display:none; width: 60px; border-left: 1px solid #ccc; padding: 4px; font-size: 12px; border:none; outline:none;">
         </div>
         <button id="downloadBtn" class="btn btn-blue"><span>Salva File</span><span class="feedback"></span></button>
         <input type="file" id="fileInput" style="display:none">
@@ -379,6 +389,7 @@
     debounceTimer = setTimeout(updatePreview, 600); // Ridotto tempo di attesa per maggiore reattività
   }
 
+  // MODIFICA 2: Fix Preview (Rimosso srcdoc, usato document.write per reset pulito)
   function updatePreview() {
     const previewFrame = document.getElementById('preview');
     if (!previewFrame) return;
@@ -397,7 +408,11 @@
       finalHtml = consoleInterceptor + code;
     }
     
-    previewFrame.srcdoc = finalHtml;
+    // Reset completo e scrittura
+    const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+    doc.open();
+    doc.write(finalHtml);
+    doc.close();
   }
 
   const consoleOutput = document.getElementById('console-output');
@@ -412,6 +427,8 @@
   });
 
   document.getElementById('clearConsoleBtn').onclick = () => consoleOutput.innerHTML = '';
+  // Aggiunto listener anche al bottone Refresh manuale
+  document.getElementById('refreshBtn').onclick = () => updatePreview();
 
   function showFeedback(btn, text) {
     const fb = btn.querySelector('.feedback');
@@ -508,13 +525,36 @@
   };
 
   document.getElementById('clearBtn').onclick = () => confirm('Cancellare tutto?') && editor.setValue('');
+  
+  // LOGICA GESTIONE ESTENSIONI AGGIUNTA
+  const extSelect = document.getElementById('fileExtension');
+  const customExtInput = document.getElementById('customExtInput');
+  
+  extSelect.addEventListener('change', function() {
+    if (this.value === 'custom') {
+      customExtInput.style.display = 'block';
+      customExtInput.focus();
+    } else {
+      customExtInput.style.display = 'none';
+    }
+  });
+
   document.getElementById('downloadBtn').onclick = function() {
     const blob = new Blob([editor.getValue()], {type: 'text/plain'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    a.download = (document.getElementById('filename').value || 'progetto') + document.getElementById('fileExtension').value;
+    
+    let extension = extSelect.value;
+    if(extension === 'custom') {
+      extension = customExtInput.value.trim();
+      if(!extension) extension = '.txt';
+      else if(!extension.startsWith('.')) extension = '.' + extension;
+    }
+    
+    a.download = (document.getElementById('filename').value || 'progetto') + extension;
     a.click();
   };
+
   document.getElementById('importBtn').onclick = () => document.getElementById('fileInput').click();
   document.getElementById('fileInput').onchange = (e) => {
     const file = e.target.files[0];
