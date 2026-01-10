@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>HTML Playground Pro</title>
+  <title>HTML Playground Pro + AI Tools</title>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/neo.min.css">
@@ -12,6 +12,7 @@
     :root{
       --brand-blue: #0146bc;
       --brand-yellow: #eddc01;
+      --brand-purple: #8a2be2; /* Nuovo colore per tool AI */
       --brand-blue-dark: #00338a;
       --bg: #f5f5f5;
       --card: #ffffff;
@@ -186,6 +187,7 @@
     .btn:hover { filter: brightness(0.95); }
     .btn-blue{background: var(--brand-blue); color: white;}
     .btn-yellow{background: var(--brand-yellow); color: var(--brand-blue-dark);}
+    .btn-purple{background: var(--brand-purple); color: white;} /* Nuovo stile bottone AI */
     .btn-ghost{background: transparent; border: 1px solid var(--border-color); color: var(--brand-blue);}
     .btn-tiny { padding: 4px 8px; font-size: 11px; height: 24px; }
     .btn-dark { background: #333; color: #fff; border: 1px solid #444; }
@@ -209,12 +211,21 @@
     .modal-content {
       background: var(--card); padding: 20px; border-radius: var(--radius); width: 600px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 12px;
+      max-height: 90vh; overflow-y: auto;
     }
     textarea.patch-area {
       width: 100%; min-height: 100px; border: 1px solid var(--border-color);
       border-radius: 4px; padding: 8px; font-family: var(--mono); font-size: 12px; resize: vertical;
     }
     label { font-weight: 600; font-size: 12px; color: var(--brand-blue); display: block; margin-bottom: 4px; }
+    
+    /* Stili specifici per il tool AI */
+    .ai-step { border: 1px solid var(--border-color); padding: 12px; border-radius: 4px; background: #fafafa; margin-bottom: 10px; }
+    .ai-step h4 { margin: 0 0 8px 0; font-size: 13px; color: var(--text-dark); display: flex; justify-content: space-between; align-items: center; }
+    .ai-log { background: #1e1e1e; color: #ccc; padding: 10px; font-family: var(--mono); font-size: 11px; max-height: 150px; overflow-y: auto; border-radius: 4px; margin-top: 8px; display: none; }
+    .ai-log-item { margin-bottom: 4px; border-bottom: 1px solid #333; padding-bottom: 2px; }
+    .ai-log-success { color: #61afef; }
+    .ai-log-error { color: #ff6b6b; }
 
     @media (max-width: 800px) {
       .workspace { flex-direction: column; overflow: auto; }
@@ -264,6 +275,7 @@
         <button id="pasteBtn" class="btn btn-ghost"><span>Incolla</span><span class="feedback"></span></button>
         <button id="clearBtn" class="btn btn-ghost"><span>Pulisci</span><span class="feedback"></span></button>
         <button id="patchBtn" class="btn btn-ghost"><span>Patch</span><span class="feedback"></span></button>
+        <button id="aiToolBtn" class="btn btn-purple"><span>AI Patch</span><span class="feedback"></span></button>
         
         <div style="flex-grow:1"></div>
         
@@ -341,6 +353,29 @@
     </div>
   </div>
 
+  <div id="aiModal" class="modal-overlay">
+    <div class="modal-content">
+      <h3 style="margin:0; color:var(--brand-purple)">AI Multi-Patch Tool</h3>
+      <p class="lead">Genera istruzioni per l'AI e applica modifiche multiple via JSON.</p>
+      
+      <div class="ai-step">
+        <h4>1. Istruisci l'AI <button id="copyPromptBtn" class="btn btn-tiny btn-purple">Copia Prompt</button></h4>
+        <p style="font-size:12px; margin:0; color:#666;">Copia questo prompt e incollalo su ChatGPT/Claude. Chiedi le modifiche che desideri. L'AI genererà un JSON perfetto per questo tool.</p>
+      </div>
+
+      <div class="ai-step">
+        <h4>2. Incolla JSON <span style="font-size:11px; font-weight:normal; color:#888;">(o trascina file .json qui)</span></h4>
+        <textarea id="jsonInput" class="patch-area" placeholder='Incolla qui il JSON generato dall&apos;AI. Es: [{"find": "...", "replace": "..."}]' spellcheck="false"></textarea>
+        <div id="aiLog" class="ai-log"></div>
+      </div>
+
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:0px">
+        <button id="closeAiBtn" class="btn btn-ghost">Chiudi</button>
+        <button id="applyJsonBtn" class="btn btn-purple">Applica Modifiche JSON</button>
+      </div>
+    </div>
+  </div>
+
 <script>
   let editor;
   let lastContentBeforePatch = null;
@@ -386,10 +421,9 @@
   let debounceTimer;
   function debouncedPreview() {
     clearTimeout(debounceTimer);
-    debounceTimer = setTimeout(updatePreview, 600); // Ridotto tempo di attesa per maggiore reattività
+    debounceTimer = setTimeout(updatePreview, 600); 
   }
 
-  // MODIFICA 2: Fix Preview (Rimosso srcdoc, usato document.write per reset pulito)
   function updatePreview() {
     const previewFrame = document.getElementById('preview');
     if (!previewFrame) return;
@@ -397,18 +431,15 @@
     const code = editor.getValue();
     const consoleInterceptor = `\n<script>\n(function(){\n  function send(type, args){\n    try { window.parent.postMessage({source: 'playground-console', type: type, args: Array.from(args).map(a => String(a))}, '*'); } catch(e){}\n  }\n  const originalLog = console.log; console.log = function(...args){ originalLog.apply(console, args); send('log', args); };\n  const originalWarn = console.warn; console.warn = function(...args){ originalWarn.apply(console, args); send('warn', args); };\n  const originalError = console.error; console.error = function(...args){ originalError.apply(console, args); send('error', args); };\n  window.onerror = function(msg, url, line){ send('error', [msg + " (Line: " + line + ")"]); };\n})();\n<\/script>\n`;
     
-    // Regex robusta per trovare il tag <head> indipendentemente dal maiuscolo/minuscolo o attributi
     let finalHtml;
     const headRegex = /<head\b[^>]*>/i;
     
     if (headRegex.test(code)) {
       finalHtml = code.replace(headRegex, (match) => match + consoleInterceptor);
     } else {
-      // Se non c'è <head>, inietta lo script all'inizio del codice
       finalHtml = consoleInterceptor + code;
     }
     
-    // Reset completo e scrittura
     const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
     doc.open();
     doc.write(finalHtml);
@@ -427,7 +458,6 @@
   });
 
   document.getElementById('clearConsoleBtn').onclick = () => consoleOutput.innerHTML = '';
-  // Aggiunto listener anche al bottone Refresh manuale
   document.getElementById('refreshBtn').onclick = () => updatePreview();
 
   function showFeedback(btn, text) {
@@ -477,6 +507,7 @@
     }
   };
 
+  // --- LOGICA MODALE PATCH ORIGINALE ---
   const patchModal = document.getElementById('patchModal');
   const patchStatus = document.getElementById('patchStatus');
   const undoPatchBtn = document.getElementById('undoPatchBtn');
@@ -524,9 +555,130 @@
     }
   };
 
+  // --- LOGICA NUOVA MODALE AI TOOLS ---
+  const aiModal = document.getElementById('aiModal');
+  const aiLog = document.getElementById('aiLog');
+
+  document.getElementById('aiToolBtn').onclick = () => {
+    aiModal.style.display = 'flex';
+    aiLog.style.display = 'none';
+    aiLog.innerHTML = '';
+    document.getElementById('jsonInput').value = '';
+  };
+  
+  document.getElementById('closeAiBtn').onclick = () => aiModal.style.display = 'none';
+
+  // 1. GENERATORE DI PROMPT "A PROVA DI BOMBA"
+  document.getElementById('copyPromptBtn').onclick = function() {
+    const currentCode = editor.getValue();
+    const prompt = `Agisci come un esperto motore di refactoring del codice. Ho bisogno di aggiornare il seguente codice HTML/JS/CSS.
+Il tuo compito è analizzare la mia richiesta e restituire ESCLUSIVAMENTE un array JSON valido contenente le modifiche, senza alcun testo introduttivo, markdown o spiegazioni.
+
+FORMATO JSON RICHIESTO:
+[
+  {
+    "find": "STRINGA_ESATTA_DEL_CODICE_DA_SOSTITUIRE",
+    "replace": "NUOVO_CODICE_AGGIORNATO"
+  }
+]
+
+REGOLE TASSATIVE (pena il fallimento dello script):
+1. Il campo "find" deve contenere un blocco di codice ESATTO, copiato carattere per carattere dal codice sorgente che ti fornirò sotto (inclusi spazi, ritorni a capo e indentazione). NON normalizzare gli spazi.
+2. Restituisci SOLO il JSON puro. Se includi markdown come \`\`\`json, lo script fallirà.
+3. Se devi fare più modifiche in punti diversi, aggiungi più oggetti all'array.
+
+Ecco il CODICE SORGENTE attuale:
+---
+${currentCode}
+---
+
+ATTENDERE ISTRUZIONI SULLE MODIFICHE DA APPORTARE...`;
+
+    navigator.clipboard.writeText(prompt);
+    showFeedback(this, 'Prompt Copiato!');
+    alert("Prompt copiato negli appunti!\n\nAdesso incollalo nella tua AI preferita (ChatGPT, Claude, etc) e aggiungi alla fine la descrizione delle modifiche che vuoi fare.");
+  };
+
+  // 2. APPLICAZIONE PATCH DA JSON
+  document.getElementById('applyJsonBtn').onclick = function() {
+    const jsonStr = document.getElementById('jsonInput').value;
+    aiLog.style.display = 'block';
+    aiLog.innerHTML = '';
+    
+    function log(msg, type='info') {
+      const div = document.createElement('div');
+      div.className = 'ai-log-item ' + (type === 'success' ? 'ai-log-success' : type === 'error' ? 'ai-log-error' : '');
+      div.textContent = msg;
+      aiLog.appendChild(div);
+    }
+
+    let patches;
+    try {
+      // Rimuove eventuali blocchi markdown se l'utente li ha copiati per sbaglio
+      const cleanJson = jsonStr.replace(/```json/g, '').replace(/```/g, '').trim();
+      patches = JSON.parse(cleanJson);
+    } catch(e) {
+      log("Errore critico: JSON non valido. Assicurati che l'AI abbia fornito solo JSON.", "error");
+      return;
+    }
+
+    if (!Array.isArray(patches)) {
+      log("Errore: Il JSON deve essere un array [ ... ].", "error");
+      return;
+    }
+
+    let content = editor.getValue();
+    let appliedCount = 0;
+    let failedCount = 0;
+
+    log(`Inizio elaborazione di ${patches.length} modifiche...`);
+
+    patches.forEach((patch, index) => {
+      if (!patch.find || patch.replace === undefined) {
+        log(`Patch #${index+1} ignorata: Struttura non valida (manca find o replace).`, "error");
+        failedCount++;
+        return;
+      }
+
+      if (content.includes(patch.find)) {
+        content = content.replace(patch.find, patch.replace);
+        log(`Patch #${index+1}: Applicata con successo.`, "success");
+        appliedCount++;
+      } else {
+        log(`Patch #${index+1}: FALLITA. Codice originale non trovato. Verifica spazi e indentazione.`, "error");
+        // Logga i primi caratteri per debug visivo
+        console.log("Expected to find:", patch.find);
+        failedCount++;
+      }
+    });
+
+    if (appliedCount > 0) {
+      editor.setValue(content);
+      log(`COMPLETATO: ${appliedCount} modifiche applicate.`, "success");
+      saveToStorage();
+    } else {
+      log("NESSUNA modifica applicata.", "error");
+    }
+  };
+
+  // Supporto per trascinamento file JSON nella textarea
+  const dropArea = document.getElementById('jsonInput');
+  dropArea.addEventListener('dragover', (e) => { e.stopPropagation(); e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; dropArea.style.borderColor = 'var(--brand-purple)'; });
+  dropArea.addEventListener('dragleave', (e) => { dropArea.style.borderColor = 'var(--border-color)'; });
+  dropArea.addEventListener('drop', (e) => {
+    e.stopPropagation(); e.preventDefault();
+    dropArea.style.borderColor = 'var(--border-color)';
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = (evt) => { document.getElementById('jsonInput').value = evt.target.result; };
+      reader.readAsText(file);
+    }
+  });
+
+
   document.getElementById('clearBtn').onclick = () => confirm('Cancellare tutto?') && editor.setValue('');
   
-  // LOGICA GESTIONE ESTENSIONI AGGIUNTA
   const extSelect = document.getElementById('fileExtension');
   const customExtInput = document.getElementById('customExtInput');
   
