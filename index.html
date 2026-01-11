@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>HTML Playground Pro + AI Tools 3.0 (Stable)</title>
+  <title>HTML Playground Pro + AI Tools 3.2</title>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/neo.min.css">
@@ -77,7 +77,6 @@
       border: 1px solid var(--border-color);
       min-width: 300px;
       padding: 10px;
-      /* FIX SCROLL: Importante per evitare che l'editor esca dal box */
       overflow: hidden; 
     }
 
@@ -178,12 +177,19 @@
     .search-controls { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; }
     .search-controls input { flex-grow: 1; padding: 6px; border: 1px solid var(--border-color); border-radius: 4px; font-size: 13px;}
     
-    .toolbar { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+    /* TOOLBAR AGGIORNATA */
+    .toolbar { 
+      display: flex; 
+      gap: 6px; 
+      flex-wrap: wrap; /* Mantiene il wrap se necessario */
+      margin-top: 8px; 
+      align-items: center;
+    }
     
     .btn{
-      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
-      padding: 8px 12px; border-radius: 4px; border: 0; cursor: pointer;
-      font-weight: 600; font-size: 13px; transition: filter 0.2s;
+      display: inline-flex; align-items: center; justify-content: center; gap: 4px;
+      padding: 6px 10px; border-radius: 4px; border: 0; cursor: pointer;
+      font-weight: 600; font-size: 12px; transition: filter 0.2s;
       position: relative; overflow: hidden; white-space: nowrap;
     }
     .btn:hover { filter: brightness(0.95); }
@@ -203,15 +209,25 @@
     .btn.loading .feedback { opacity: 1; }
     .btn.loading span:first-child { opacity: 0; }
 
-    .file-group { display: flex; gap: 4px; align-items: center; background: #fff; border: 1px solid var(--border-color); border-radius: 4px; padding: 2px; }
-    .file-group input, .file-group select { border: none; font-size: 12px; padding: 4px; outline: none; background: transparent; }
+    /* Gruppo File Ottimizzato */
+    .file-group { 
+      display: flex; 
+      gap: 2px; 
+      align-items: center; 
+      background: #fff; 
+      border: 1px solid var(--border-color); 
+      border-radius: 4px; 
+      padding: 1px; 
+      margin-left: auto; /* Spinge il gruppo a destra */
+    }
+    .file-group input, .file-group select { border: none; font-size: 11px; padding: 4px; outline: none; background: transparent; }
     
     .modal-overlay {
       position: fixed; inset: 0; background: rgba(0,0,0,0.5); backdrop-filter: blur(2px);
       display: none; align-items: center; justify-content: center; z-index: 999;
     }
     .modal-content {
-      background: var(--card); padding: 20px; border-radius: var(--radius); width: 600px;
+      background: var(--card); padding: 20px; border-radius: var(--radius); width: 700px;
       box-shadow: 0 10px 25px rgba(0,0,0,0.2); display: flex; flex-direction: column; gap: 12px;
       max-height: 90vh; overflow-y: auto;
     }
@@ -234,6 +250,7 @@
       .resizer { display: none; }
       .pane-preview { width: 100%; height: 500px; }
       .pane-editor { min-height: 400px; }
+      .file-group { margin-left: 0; width: 100%; justify-content: space-between; } /* Su mobile va a capo ordinato */
     }
   </style>
   
@@ -249,8 +266,8 @@
   <header class="app-header">
     <div class="logo"><svg class="logo-icon" viewBox="0 0 24 24"><path d="M11.24 2.37l-5.41 2.31L11.24 9.1v12.52l-7.6-3.26C3.25 18.15 3 17.8 3 17.41V6.13c0-.39.25-.74.64-.94l7.6-3.26c.26-.11.55-.11.8 0zM12.76 2.37l7.6 3.26c.39.2.64.55.64.94v11.28c0 .39-.25.74-.64.94l-7.6 3.26c-.26.11-.55-.11-.8 0V9.1l5.41-4.42-5.41-2.31z"></path></svg></div>
     <div>
-      <h1>Editor HTML Pro</h1>
-      <p class="lead">Editor con Auto-save, Live Preview e Debug Console.</p>
+      <h1>Editor HTML Pro + AI Tools</h1>
+      <p class="lead">Editor Completo con Auto-save, Live Preview e Refactoring AI.</p>
     </div>
   </header>
 
@@ -273,30 +290,29 @@
       <textarea id="code" name="code"></textarea>
 
       <div class="toolbar">
-        <button id="copyBtn" class="btn btn-yellow"><span>Copia</span><span class="feedback"></span></button>
-        <button id="pasteBtn" class="btn btn-ghost"><span>Incolla</span><span class="feedback"></span></button>
-        <button id="importBtn" class="btn btn-ghost" title="Importa File"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></button>
-        <button id="clearBtn" class="btn btn-ghost"><span>Pulisci</span><span class="feedback"></span></button>
-        <button id="patchBtn" class="btn btn-ghost"><span>Patch</span><span class="feedback"></span></button>
-        <button id="aiToolBtn" class="btn btn-purple"><span>AI Tool 3.0</span><span class="feedback"></span></button>
+        <button id="copyBtn" class="btn btn-yellow" title="Copia Codice"><span>Copia</span><span class="feedback"></span></button>
+        <button id="pasteBtn" class="btn btn-ghost" title="Incolla Codice"><span>Incolla</span><span class="feedback"></span></button>
+        <button id="clearBtn" class="btn btn-ghost" title="Pulisci Editor"><span>Pulisci</span><span class="feedback"></span></button>
         
-        <div style="flex-grow:1"></div>
+        <div style="width:1px; height:20px; background:var(--border-color); margin:0 4px;"></div>
+        
+        <button id="patchBtn" class="btn btn-ghost" title="Patch Manuale"><span>Patch</span><span class="feedback"></span></button>
+        <button id="aiToolBtn" class="btn btn-purple"><span>✨ AI Tool</span><span class="feedback"></span></button>
         
         <div class="file-group">
-          <input type="text" id="filename" value="progetto" placeholder="Nome file" style="width:80px">
-          <select id="fileExtension">
+          <button id="importBtn" class="btn btn-ghost btn-tiny" title="Importa File" style="border:none; border-right:1px solid #eee;"><svg viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></button>
+          <input type="text" id="filename" value="progetto" placeholder="Nome" style="width:70px">
+          <select id="fileExtension" style="width:50px">
             <option value=".html">.html</option>
             <option value=".css">.css</option>
             <option value=".js">.js</option>
             <option value=".json">.json</option>
             <option value=".xml">.xml</option>
-            <option value=".svg">.svg</option>
             <option value=".txt">.txt</option>
-            <option value="custom" style="font-weight: bold; color: var(--brand-blue)">Custom...</option>
           </select>
-          <input type="text" id="customExtInput" placeholder=".ext" style="display:none; width: 60px; border-left: 1px solid #ccc; padding: 4px; font-size: 12px; border:none; outline:none;">
+          <button id="downloadBtn" class="btn btn-blue btn-tiny" style="border-radius:0 4px 4px 0;">Salva</button>
         </div>
-        <button id="downloadBtn" class="btn btn-blue"><span>Salva File</span><span class="feedback"></span></button>
+        
         <input type="file" id="fileInput" style="display:none">
       </div>
     </div>
@@ -357,14 +373,14 @@
 
   <div id="aiModal" class="modal-overlay">
     <div class="modal-content">
-      <h3 style="margin:0; color:var(--brand-purple)">AI Multi-Patch Tool 3.0 (Robust)</h3>
+      <h3 style="margin:0; color:var(--brand-purple)">AI Multi-Patch Tool 3.2 (Robust)</h3>
       <p class="lead">Sistema immune a virgolette e markdown. Usa il formato @@@.</p>
       
       <div class="ai-step">
         <h4>1. Istruisci l'AI</h4>
-        <textarea id="aiUserInstructions" class="patch-area" placeholder="Scrivi qui le modifiche da apportare..." style="margin-bottom:8px; min-height:60px;"></textarea>
+        <textarea id="aiUserInstructions" class="patch-area" placeholder="Descrivi qui le modifiche che vuoi fare al codice..." style="height:60px; min-height:60px; margin-bottom:8px;"></textarea>
         <button id="copyPromptBtn" class="btn btn-tiny btn-purple" style="width:100%">Copia Prompt Completo</button>
-        <p style="font-size:12px; margin-top:6px; color:#666;">Il prompt includerà le tue istruzioni, il codice sorgente e le regole di formattazione.</p>
+        <p style="font-size:12px; margin-top:6px; color:#666;">Il prompt includerà le tue istruzioni e l'avviso di sicurezza per l'integrità del codice.</p>
       </div>
 
       <div class="ai-step">
@@ -381,7 +397,6 @@
   </div>
 
 <script>
-  // FIX: Usiamo 'var' invece di 'let' per evitare errori di ridichiarazione se lo script viene incollato due volte
   var editor;
   var lastContentBeforePatch = null;
   const STORAGE_KEY = 'html_playground_content';
@@ -392,7 +407,6 @@
       theme: "neo",
       lineNumbers: true,
       lineWrapping: true,
-      // FIX: Rimosso viewportMargin: Infinity per ripristinare lo scroll della finestra
       autofocus: true
     });
 
@@ -584,20 +598,20 @@
   
   document.getElementById('closeAiBtn').onclick = () => aiModal.style.display = 'none';
 
-  // 1. GENERATORE DI PROMPT 3.0
+  // 1. GENERATORE DI PROMPT 3.0 (Include istruzioni utente e avviso integrità)
   document.getElementById('copyPromptBtn').onclick = function() {
     const currentCode = editor.getValue();
-    const instructions = document.getElementById('aiUserInstructions').value || "Migliora il codice.";
-
+    const userInstructions = document.getElementById('aiUserInstructions').value.trim();
+    
     const prompt = `Agisci come un esperto sviluppatore. Ho bisogno di modifiche al codice.
 
-***MODIFICHE DA APPORTARE***
-${instructions}
+***MODIFICHE RICHIESTE***
+${userInstructions ? userInstructions : "Migliora il codice seguendo le best practices."}
 
-***ATTENZIONE IMPORTANTE***
-Non modificare, ridurre o semplificare nessuna altra parte de codice. Questo velocizzerà molto i nostri tempi di sviluppo e ti risparmierà numerosi rework che possiamo prevenire.
+***AVVISO IMPORTANTE SULL'INTEGRITÀ***
+NON modificare, ridurre o semplificare nessuna altra parte del codice che non sia strettamente necessaria per la richiesta. Mantieni l'integrità dell'applicazione attuale.
 
-***FORMATO DELLA RISPOSTA***
+***FORMATO RISPOSTA (Obbligatorio)***
 Usa SOLO questo formato personalizzato per la risposta. 
 NON usare blocchi Markdown (\`\`\`) e NON usare JSON.
 
@@ -619,7 +633,7 @@ Attendo le modifiche nel formato @@@ FIND @@@...`;
 
     navigator.clipboard.writeText(prompt);
     showFeedback(this, 'Prompt Copiato!');
-    alert("Prompt 3.0 copiato!\n\nQuesto formato usa '@@@' come separatore. \nFunzionerà anche se l'AI usa virgolette o va a capo.");
+    alert("Prompt copiato con successo!\n\nInclude:\n1. Le tue istruzioni\n2. L'avviso di integrità\n3. Il formato 'Safe Block' (@@@)");
   };
 
   // 2. APPLICAZIONE PATCH 3.0 (SAFE BLOCKS)
@@ -707,28 +721,13 @@ Attendo le modifiche nel formato @@@ FIND @@@...`;
   document.getElementById('clearBtn').onclick = () => confirm('Cancellare tutto?') && editor.setValue('');
   
   const extSelect = document.getElementById('fileExtension');
-  const customExtInput = document.getElementById('customExtInput');
   
-  extSelect.addEventListener('change', function() {
-    if (this.value === 'custom') {
-      customExtInput.style.display = 'block';
-      customExtInput.focus();
-    } else {
-      customExtInput.style.display = 'none';
-    }
-  });
-
   document.getElementById('downloadBtn').onclick = function() {
     const blob = new Blob([editor.getValue()], {type: 'text/plain'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
     
     let extension = extSelect.value;
-    if(extension === 'custom') {
-      extension = customExtInput.value.trim();
-      if(!extension) extension = '.txt';
-      else if(!extension.startsWith('.')) extension = '.' + extension;
-    }
     
     a.download = (document.getElementById('filename').value || 'progetto') + extension;
     a.click();
