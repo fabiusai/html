@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>HTML Playground Pro + AI Tools 2.0</title>
+  <title>HTML Playground Pro + AI Tools 3.0 (Stable)</title>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/neo.min.css">
@@ -77,6 +77,8 @@
       border: 1px solid var(--border-color);
       min-width: 300px;
       padding: 10px;
+      /* FIX SCROLL: Importante per evitare che l'editor esca dal box */
+      overflow: hidden; 
     }
 
     .resizer {
@@ -276,7 +278,7 @@
         <button id="importBtn" class="btn btn-ghost" title="Importa File"><svg viewBox="0 0 24 24"><path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/></svg></button>
         <button id="clearBtn" class="btn btn-ghost"><span>Pulisci</span><span class="feedback"></span></button>
         <button id="patchBtn" class="btn btn-ghost"><span>Patch</span><span class="feedback"></span></button>
-        <button id="aiToolBtn" class="btn btn-purple"><span>AI Patch</span><span class="feedback"></span></button>
+        <button id="aiToolBtn" class="btn btn-purple"><span>AI Tool 3.0</span><span class="feedback"></span></button>
         
         <div style="flex-grow:1"></div>
         
@@ -355,17 +357,17 @@
 
   <div id="aiModal" class="modal-overlay">
     <div class="modal-content">
-      <h3 style="margin:0; color:var(--brand-purple)">AI Multi-Patch Tool 2.0</h3>
-      <p class="lead">Applica modifiche multiple generate dall'AI usando il formato a Blocchi.</p>
+      <h3 style="margin:0; color:var(--brand-purple)">AI Multi-Patch Tool 3.0 (Robust)</h3>
+      <p class="lead">Sistema immune a virgolette e markdown. Usa il formato @@@.</p>
       
       <div class="ai-step">
         <h4>1. Istruisci l'AI <button id="copyPromptBtn" class="btn btn-tiny btn-purple">Copia Prompt</button></h4>
-        <p style="font-size:12px; margin:0; color:#666;">Copia questo prompt. Chiedi all'AI le modifiche. L'AI userà un formato speciale (SEARCH/REPLACE) che evita errori di sintassi.</p>
+        <p style="font-size:12px; margin:0; color:#666;">Copia questo prompt. Chiedi all'AI le modifiche. Se l'AI usa i backtick (```), il tool li rimuoverà automaticamente.</p>
       </div>
 
       <div class="ai-step">
         <h4>2. Incolla Risposta AI <span style="font-size:11px; font-weight:normal; color:#888;">(o trascina testo qui)</span></h4>
-        <textarea id="aiInput" class="patch-area" placeholder="Incolla qui la risposta dell'AI contenente i blocchi <<<<<<<< SEARCH..." spellcheck="false"></textarea>
+        <textarea id="aiInput" class="patch-area" placeholder="Incolla qui la risposta dell'AI contenente i blocchi @@@ FIND @@@..." spellcheck="false"></textarea>
         <div id="aiLog" class="ai-log"></div>
       </div>
 
@@ -377,8 +379,9 @@
   </div>
 
 <script>
-  let editor;
-  let lastContentBeforePatch = null;
+  // FIX: Usiamo 'var' invece di 'let' per evitare errori di ridichiarazione se lo script viene incollato due volte
+  var editor;
+  var lastContentBeforePatch = null;
   const STORAGE_KEY = 'html_playground_content';
   
   window.onload = function() {
@@ -387,7 +390,7 @@
       theme: "neo",
       lineNumbers: true,
       lineWrapping: true,
-      viewportMargin: Infinity,
+      // FIX: Rimosso viewportMargin: Infinity per ripristinare lo scroll della finestra
       autofocus: true
     });
 
@@ -518,7 +521,7 @@
     }
   };
 
-  // --- LOGICA MODALE PATCH ORIGINALE ---
+  // --- LOGICA MODALE PATCH MANUALE ---
   const patchModal = document.getElementById('patchModal');
   const patchStatus = document.getElementById('patchStatus');
   const undoPatchBtn = document.getElementById('undoPatchBtn');
@@ -566,7 +569,7 @@
     }
   };
 
-  // --- LOGICA NUOVA MODALE AI TOOLS 2.0 (Block Format) ---
+  // --- LOGICA NUOVA MODALE AI TOOLS 3.0 (Safe Blocks) ---
   const aiModal = document.getElementById('aiModal');
   const aiLog = document.getElementById('aiLog');
 
@@ -579,40 +582,37 @@
   
   document.getElementById('closeAiBtn').onclick = () => aiModal.style.display = 'none';
 
-  // 1. GENERATORE DI PROMPT CON BLOCCHI DELIMITATI
+  // 1. GENERATORE DI PROMPT 3.0
   document.getElementById('copyPromptBtn').onclick = function() {
     const currentCode = editor.getValue();
-    const prompt = `Agisci come un esperto motore di refactoring. Ho bisogno di modificare il codice seguente.
-Analizza la richiesta e restituisci le modifiche usando ESCLUSIVAMENTE il formato a blocchi descritto sotto.
+    const prompt = `Agisci come un esperto sviluppatore. Ho bisogno di modifiche al codice.
+Usa SOLO questo formato personalizzato per la risposta. 
+NON usare blocchi Markdown (\`\`\`) e NON usare JSON.
 
-FORMATO RISPOSTA (Obbligatorio per ogni modifica):
-<<<<<<<< SEARCH
-[Incolla qui il blocco di codice ORIGINALE che deve essere sostituito. Deve combaciare ESATTAMENTE, inclusi spazi.]
-========
-[Incolla qui il NUOVO codice modificato che prenderà il posto del vecchio.]
->>>>>>>>
+FORMATO RICHIESTO:
+@@@ FIND @@@
+[Qui incolla il codice esatto da sostituire]
+@@@ REPLACE @@@
+[Qui incolla il nuovo codice]
+@@@ END @@@
 
-REGOLE CRITICHE:
-1. NON usare JSON o Markdown (niente \`\`\`). Restituisci testo grezzo.
-2. Il blocco SEARCH deve esistere nel codice sorgente esattamente come scritto.
-3. Se ci sono più modifiche, metti i blocchi uno dopo l'altro.
-4. Assicurati che i delimitatori (<<<<<<<< SEARCH, =======, >>>>>>>>) siano su righe separate.
+Se ci sono più modifiche, ripeti il blocco.
 
-Ecco il CODICE SORGENTE attuale:
+CODICE SORGENTE:
 ---
 ${currentCode}
 ---
 
-ATTENDO ISTRUZIONI SULLE MODIFICHE...`;
+Attendo le modifiche nel formato @@@ FIND @@@...`;
 
     navigator.clipboard.writeText(prompt);
     showFeedback(this, 'Prompt Copiato!');
-    alert("Prompt copiato!\n\nIncollalo nella tua AI e chiedi le modifiche. L'AI risponderà con blocchi speciali che questo tool può leggere.");
+    alert("Prompt 3.0 copiato!\n\nQuesto formato usa '@@@' come separatore. \nFunzionerà anche se l'AI usa virgolette o va a capo.");
   };
 
-  // 2. APPLICAZIONE PATCH DA BLOCCHI (NO JSON)
+  // 2. APPLICAZIONE PATCH 3.0 (SAFE BLOCKS)
   document.getElementById('applyAiBtn').onclick = function() {
-    const rawInput = document.getElementById('aiInput').value;
+    let rawInput = document.getElementById('aiInput').value;
     aiLog.style.display = 'block';
     aiLog.innerHTML = '';
     
@@ -623,24 +623,20 @@ ATTENDO ISTRUZIONI SULLE MODIFICHE...`;
       aiLog.appendChild(div);
     }
 
-    // Regex per trovare i blocchi: 
-    // Cattura tutto tra SEARCH e ======= (Gruppo 1: Find)
-    // Cattura tutto tra ======= e >>>>>>>> (Gruppo 2: Replace)
-    const regex = /<<<<<<<< SEARCH\s*([\s\S]*?)\s*========\s*([\s\S]*?)\s*>>>>>>>>/g;
+    // 1. Pulizia Markdown: Rimuove i backticks se l'AI li ha messi
+    rawInput = rawInput.replace(/```html/gi, '').replace(/```/g, '');
+
+    // 2. Regex per il formato @@@
+    const regex = /@@@ FIND @@@\s*([\s\S]*?)\s*@@@ REPLACE @@@\s*([\s\S]*?)\s*@@@ END @@@/g;
     
     let match;
     let patches = [];
-    
-    // Estrazione patches
     while ((match = regex.exec(rawInput)) !== null) {
-      patches.push({
-        find: match[1], // Manteniamo gli spazi interni, il trim viene fatto dopo se necessario
-        replace: match[2]
-      });
+      patches.push({ find: match[1], replace: match[2] });
     }
 
     if (patches.length === 0) {
-      log("Errore: Nessun blocco valido trovato. Controlla che l'AI abbia usato <<<<<<<< SEARCH ...", "error");
+      log("ERRORE: Nessun blocco @@@ trovato. Assicurati di usare il prompt corretto.", "error");
       return;
     }
 
@@ -648,24 +644,26 @@ ATTENDO ISTRUZIONI SULLE MODIFICHE...`;
     let appliedCount = 0;
     let failedCount = 0;
 
-    log(`Trovati ${patches.length} blocchi di modifica. Elaborazione...`);
-
     patches.forEach((patch, index) => {
-      // Pulizia leggera: rimuove solo il primo newline se generato dal delimitatore, ma mantiene l'indentazione
-      // Spesso l'AI fa: <<<<<<<< SEARCH\n  <div>...
-      // Vogliamo cercare "  <div>..."
-      const cleanFind = patch.find.replace(/^\n/, '').replace(/\n$/, '');
-      const cleanReplace = patch.replace.replace(/^\n/, '').replace(/\n$/, '');
+      // Trimma solo gli spazi esterni, mantieni l'indentazione interna
+      const findText = patch.find.replace(/^\n/, '').replace(/\n$/, ''); 
+      const replaceText = patch.replace.replace(/^\n/, '').replace(/\n$/, '');
 
-      if (content.includes(cleanFind)) {
-        content = content.replace(cleanFind, cleanReplace);
-        log(`Patch #${index+1}: Applicata con successo.`, "success");
+      if (content.includes(findText)) {
+        content = content.replace(findText, replaceText);
+        log(`Patch #${index+1}: Applicata correttamente.`, "success");
         appliedCount++;
       } else {
-        log(`Patch #${index+1}: FALLITA. Codice originale non trovato.`, "error");
-        // Tentativo di debug per l'utente
-        console.log("Expected to find:", cleanFind);
-        failedCount++;
+        // Fallback: prova a trimmare tutto se fallisce il match esatto
+        if (content.includes(patch.find.trim())) {
+           content = content.replace(patch.find.trim(), replaceText);
+           log(`Patch #${index+1}: Applicata (con trim).`, "success");
+           appliedCount++;
+        } else {
+           log(`Patch #${index+1}: FALLITA. Codice originale non trovato.`, "error");
+           console.warn("Cercavo:\n", findText);
+           failedCount++;
+        }
       }
     });
 
@@ -674,7 +672,7 @@ ATTENDO ISTRUZIONI SULLE MODIFICHE...`;
       log(`COMPLETATO: ${appliedCount} modifiche applicate.`, "success");
       saveToStorage();
     } else {
-      log("Nessuna modifica applicata. Verifica che l'AI abbia copiato il codice esatto.", "error");
+      log("Nessuna modifica applicata. Apri la console (F12) per i dettagli.", "error");
     }
   };
 
