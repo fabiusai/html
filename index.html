@@ -361,8 +361,10 @@
       <p class="lead">Sistema immune a virgolette e markdown. Usa il formato @@@.</p>
       
       <div class="ai-step">
-        <h4>1. Istruisci l'AI <button id="copyPromptBtn" class="btn btn-tiny btn-purple">Copia Prompt</button></h4>
-        <p style="font-size:12px; margin:0; color:#666;">Copia questo prompt. Chiedi all'AI le modifiche. Se l'AI usa i backtick (```), il tool li rimuoverà automaticamente.</p>
+        <h4>1. Istruisci l'AI</h4>
+        <textarea id="aiUserInstructions" class="patch-area" placeholder="Scrivi qui le modifiche da apportare..." style="margin-bottom:8px; min-height:60px;"></textarea>
+        <button id="copyPromptBtn" class="btn btn-tiny btn-purple" style="width:100%">Copia Prompt Completo</button>
+        <p style="font-size:12px; margin-top:6px; color:#666;">Il prompt includerà le tue istruzioni, il codice sorgente e le regole di formattazione.</p>
       </div>
 
       <div class="ai-step">
@@ -585,7 +587,17 @@
   // 1. GENERATORE DI PROMPT 3.0
   document.getElementById('copyPromptBtn').onclick = function() {
     const currentCode = editor.getValue();
+    const instructions = document.getElementById('aiUserInstructions').value || "Migliora il codice.";
+
     const prompt = `Agisci come un esperto sviluppatore. Ho bisogno di modifiche al codice.
+
+***MODIFICHE DA APPORTARE***
+${instructions}
+
+***ATTENZIONE IMPORTANTE***
+Non modificare, ridurre o semplificare nessuna altra parte de codice. Questo velocizzerà molto i nostri tempi di sviluppo e ti risparmierà numerosi rework che possiamo prevenire.
+
+***FORMATO DELLA RISPOSTA***
 Usa SOLO questo formato personalizzato per la risposta. 
 NON usare blocchi Markdown (\`\`\`) e NON usare JSON.
 
