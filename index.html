@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>HTML Playground Pro + AI Tools 3.2</title>
+  <title>HTML Playground Pro + AI Tools 3.3</title>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/neo.min.css">
@@ -181,7 +181,7 @@
     .toolbar { 
       display: flex; 
       gap: 6px; 
-      flex-wrap: wrap; /* Mantiene il wrap se necessario */
+      flex-wrap: wrap; 
       margin-top: 8px; 
       align-items: center;
     }
@@ -218,7 +218,7 @@
       border: 1px solid var(--border-color); 
       border-radius: 4px; 
       padding: 1px; 
-      margin-left: auto; /* Spinge il gruppo a destra */
+      margin-left: auto; 
     }
     .file-group input, .file-group select { border: none; font-size: 11px; padding: 4px; outline: none; background: transparent; }
     
@@ -250,7 +250,7 @@
       .resizer { display: none; }
       .pane-preview { width: 100%; height: 500px; }
       .pane-editor { min-height: 400px; }
-      .file-group { margin-left: 0; width: 100%; justify-content: space-between; } /* Su mobile va a capo ordinato */
+      .file-group { margin-left: 0; width: 100%; justify-content: space-between; }
     }
   </style>
   
@@ -349,18 +349,24 @@
 
   <div id="patchModal" class="modal-overlay">
     <div class="modal-content">
-      <h3 style="margin:0; color:var(--brand-blue)">Trova e Sostituisci Blocco</h3>
-      <p class="lead">Incolla il blocco esatto da cercare e il nuovo codice da inserire.</p>
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0; color:var(--brand-blue)">Patch Manuale Intelligente</h3>
+        <button id="copyPatchPromptBtn" class="btn btn-tiny btn-purple" title="Copia istruzioni per AI">Copia Prompt x AI</button>
+      </div>
+      <p class="lead">Incolla il blocco vecchio (ricerca flessibile su spazi/maiuscole) e il nuovo codice.</p>
       
-      <div id="patchStatus" style="font-size: 13px; font-weight: bold; min-height: 20px;"></div>
+      <div id="patchStatus" style="font-size: 13px; font-weight: bold; min-height: 20px; padding:4px 0;"></div>
 
-      <div>
-        <label>Codice da trovare (Vecchio):</label>
-        <textarea id="patchOld" class="patch-area" spellcheck="false"></textarea>
+      <div style="position:relative;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+          <label>Codice da trovare (Vecchio):</label>
+          <button id="clearPatchFieldsBtn" class="btn btn-tiny btn-ghost" style="margin-bottom:2px;">Svuota Campi</button>
+        </div>
+        <textarea id="patchOld" class="patch-area" spellcheck="false" placeholder="Incolla qui il codice presente nell'editor..."></textarea>
       </div>
       <div>
         <label>Sostituisci con (Nuovo):</label>
-        <textarea id="patchNew" class="patch-area" spellcheck="false"></textarea>
+        <textarea id="patchNew" class="patch-area" spellcheck="false" placeholder="Incolla qui il nuovo codice..."></textarea>
       </div>
       
       <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px">
@@ -537,41 +543,105 @@
     }
   };
 
-  // --- LOGICA MODALE PATCH MANUALE ---
+  // --- LOGICA MODALE PATCH MANUALE (AGGIORNATA) ---
   const patchModal = document.getElementById('patchModal');
   const patchStatus = document.getElementById('patchStatus');
   const undoPatchBtn = document.getElementById('undoPatchBtn');
+  const patchOldInput = document.getElementById('patchOld');
+  const patchNewInput = document.getElementById('patchNew');
 
   document.getElementById('patchBtn').onclick = () => {
     patchModal.style.display = 'flex';
     patchStatus.textContent = '';
     undoPatchBtn.style.display = 'none';
+    patchOldInput.focus();
   };
 
   document.getElementById('closePatchBtn').onclick = () => patchModal.style.display = 'none';
+
+  // Funzione helper per creare Regex "Fuzzy" (ignora spazi multipli/a capo e case sensitive)
+  function createFuzzyRegex(text) {
+    // Escape dei caratteri speciali regex
+    const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    // Sostituisce qualsiasi sequenza di spazi/a capo con \s+ (spazio generico)
+    const pattern = escaped.replace(/\s+/g, '\\s+');
+    return new RegExp(pattern, 'i'); // Flag 'i' per case-insensitive
+  }
+
+  // 3) Controllo Real-time
+  patchOldInput.addEventListener('input', function() {
+    const val = this.value.trim();
+    if(!val) {
+      patchStatus.textContent = '';
+      return;
+    }
+    
+    const currentContent = editor.getValue();
+    const regex = createFuzzyRegex(val);
+
+    if(regex.test(currentContent)) {
+      patchStatus.style.color = "green";
+      patchStatus.innerHTML = "✔ <b>Trovato!</b> Corrispondenza rilevata nel codice.";
+    } else {
+      patchStatus.style.color = "red";
+      patchStatus.innerHTML = "✖ <b>Non trovato.</b> Verifica il codice incollato.";
+    }
+  });
+
+  // 1) Tasto Svuota Campi
+  document.getElementById('clearPatchFieldsBtn').onclick = function() {
+    patchOldInput.value = '';
+    patchNewInput.value = '';
+    patchStatus.textContent = '';
+    patchOldInput.focus();
+  };
+
+  // 4) Copia Prompt AI specifico per Patch Manuale
+  document.getElementById('copyPatchPromptBtn').onclick = function() {
+    const promptText = `Ho bisogno di fare una modifica manuale precisa al codice.
+Per favore forniscimi SOLO due blocchi di codice:
+1. Il blocco ESATTO di codice originale che devo cercare e rimuovere (includi abbastanza contesto per renderlo unico).
+2. Il NUOVO blocco di codice con cui devo sostituirlo.
+Non aggiungere spiegazioni, solo i due blocchi.`;
+    
+    navigator.clipboard.writeText(promptText);
+    const originalText = this.textContent;
+    this.textContent = "Copiato!";
+    setTimeout(() => this.textContent = originalText, 2000);
+  };
   
   document.getElementById('applyPatchBtn').onclick = function() {
-    const oldCode = document.getElementById('patchOld').value;
-    const newCode = document.getElementById('patchNew').value;
+    const oldCodeVal = patchOldInput.value.trim();
+    const newCode = patchNewInput.value; 
     const currentContent = editor.getValue();
     
-    if (oldCode.trim() === "") {
+    if (oldCodeVal === "") {
       patchStatus.style.color = "red";
       patchStatus.textContent = "Errore: Inserisci il codice da trovare.";
       return;
     }
 
-    if(currentContent.includes(oldCode)) {
+    // Ricerca Intelligente
+    const regex = createFuzzyRegex(oldCodeVal);
+
+    if(regex.test(currentContent)) {
       lastContentBeforePatch = currentContent;
-      editor.setValue(currentContent.replace(oldCode, newCode));
+      
+      // Sostituzione usando la regex
+      const updatedContent = currentContent.replace(regex, newCode);
+      editor.setValue(updatedContent);
+      
+      // 2) Feedback e Pulizia
       patchStatus.style.color = "green";
-      patchStatus.textContent = "✔ Patch applicata con successo!";
+      patchStatus.innerHTML = "✔ <b>Patch applicata!</b> I campi sono stati svuotati.";
       undoPatchBtn.style.display = 'inline-flex';
-      document.getElementById('patchOld').value = ''; 
-      document.getElementById('patchNew').value = '';
+      
+      // Svuota i campi input ma lascia il messaggio di successo
+      patchOldInput.value = ''; 
+      patchNewInput.value = '';
     } else {
       patchStatus.style.color = "red";
-      patchStatus.textContent = "✖ Blocco non trovato nel codice.";
+      patchStatus.textContent = "✖ Blocco non trovato (nemmeno con ricerca flessibile).";
     }
   };
 
@@ -585,7 +655,7 @@
     }
   };
 
-  // --- LOGICA NUOVA MODALE AI TOOLS 3.0 (Safe Blocks) ---
+  // --- LOGICA NUOVA MODALE AI TOOLS 3.2 (Safe Blocks) ---
   const aiModal = document.getElementById('aiModal');
   const aiLog = document.getElementById('aiLog');
 
