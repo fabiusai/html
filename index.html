@@ -828,12 +828,31 @@ Attendo le modifiche nel formato @@@ FIND @@@...`;
   
   const extSelect = document.getElementById('fileExtension');
   
-  document.getElementById('downloadBtn').onclick = function() {
-    const blob = new Blob([editor.getValue()], {type: 'text/plain'});
+  document.getElementById('downloadBtn').onclick = async function() {
+    const content = editor.getValue();
+    const name = document.getElementById('filename').value || 'progetto';
+    const extension = extSelect.value;
+    const fullName = name + extension;
+
+    // Uso API File System (gestisce nativamente la sovrascrittura chiedendo conferma)
+    if ('showSaveFilePicker' in window) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: fullName,
+          types: [{ description: 'Code File', accept: {'text/plain': [extension]} }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(content);
+        await writable.close();
+        return;
+      } catch (err) { return; } // Utente ha annullato
+    }
+
+    // Fallback download classico
+    const blob = new Blob([content], {type: 'text/plain'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
-    let extension = extSelect.value;
-    a.download = (document.getElementById('filename').value || 'progetto') + extension;
+    a.download = fullName;
     a.click();
   };
 
@@ -841,6 +860,17 @@ Attendo le modifiche nel formato @@@ FIND @@@...`;
   document.getElementById('fileInput').onchange = (e) => {
     const file = e.target.files[0];
     if(file) {
+      // Auto-compilazione nome ed estensione
+      const lastDot = file.name.lastIndexOf('.');
+      if (lastDot !== -1) {
+        document.getElementById('filename').value = file.name.substring(0, lastDot);
+        const ext = file.name.substring(lastDot);
+        // Aggiorna select solo se estensione supportata
+        if (Array.from(extSelect.options).some(o => o.value === ext)) extSelect.value = ext;
+      } else {
+        document.getElementById('filename').value = file.name;
+      }
+
       const reader = new FileReader();
       reader.onload = (ev) => editor.setValue(ev.target.result);
       reader.readAsText(file);
