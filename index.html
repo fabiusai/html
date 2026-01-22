@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>HTML Playground Pro + AI Tools 3.6</title>
+  <title>HTML Playground Pro + History</title>
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/theme/neo.min.css">
@@ -200,6 +200,7 @@
     .btn-tiny { padding: 4px 8px; font-size: 11px; height: 24px; }
     .btn-dark { background: #333; color: #fff; border: 1px solid #444; }
     .btn-danger { color: #ff6b6b; border: 1px solid #ff6b6b; background: transparent; }
+    .btn-danger-filled { background: #ff6b6b; color: white; border: none; }
     .btn svg { width: 14px; height: 14px; fill: currentColor; }
 
     .btn .feedback {
@@ -237,15 +238,6 @@
     }
     label { font-weight: 600; font-size: 12px; color: var(--brand-blue); display: block; margin-bottom: 4px; }
     
-    /* Stili specifici per il tool AI */
-    .ai-step { border: 1px solid var(--border-color); padding: 12px; border-radius: 4px; background: #fafafa; margin-bottom: 10px; }
-    .ai-step h4 { margin: 0 0 8px 0; font-size: 13px; color: var(--text-dark); display: flex; justify-content: space-between; align-items: center; }
-    .ai-log { background: #1e1e1e; color: #ccc; padding: 10px; font-family: var(--mono); font-size: 11px; max-height: 150px; overflow-y: auto; border-radius: 4px; margin-top: 8px; display: none; }
-    .ai-log-item { margin-bottom: 4px; border-bottom: 1px solid #333; padding-bottom: 2px; }
-    .ai-log-success { color: #61afef; }
-    .ai-log-error { color: #ff6b6b; }
-
-    /* Switch Style per AI e Patch */
     .switch-container { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 8px; }
     .switch-container input { cursor: pointer; }
     .switch-container label { margin: 0; font-weight: normal; color: #333; cursor: pointer; }
@@ -271,8 +263,8 @@
   <header class="app-header">
     <div class="logo"><svg class="logo-icon" viewBox="0 0 24 24"><path d="M11.24 2.37l-5.41 2.31L11.24 9.1v12.52l-7.6-3.26C3.25 18.15 3 17.8 3 17.41V6.13c0-.39.25-.74.64-.94l7.6-3.26c.26-.11.55-.11.8 0zM12.76 2.37l7.6 3.26c.39.2.64.55.64.94v11.28c0 .39-.25.74-.64.94l-7.6 3.26c-.26.11-.55-.11-.8 0V9.1l5.41-4.42-5.41-2.31z"></path></svg></div>
     <div>
-      <h1>Editor HTML Pro + AI Tools <span style="font-size:11px; background:var(--brand-yellow); color:var(--brand-blue-dark); padding:2px 6px; border-radius:4px; vertical-align:middle; margin-left:8px;">v3.6</span></h1>
-      <p class="lead">Editor Completo con Auto-save, Live Preview e Refactoring AI.</p>
+      <h1>Editor HTML Pro <span style="font-size:11px; background:var(--brand-yellow); color:var(--brand-blue-dark); padding:2px 6px; border-radius:4px; vertical-align:middle; margin-left:8px;">v3.7 History</span></h1>
+      <p class="lead">Editor Completo con Auto-save, Live Preview e History Undo.</p>
     </div>
   </header>
 
@@ -302,7 +294,7 @@
         <div style="width:1px; height:20px; background:var(--border-color); margin:0 4px;"></div>
         
         <button id="patchBtn" class="btn btn-ghost" title="Patch Manuale"><span>Patch</span><span class="feedback"></span></button>
-        <button id="aiToolBtn" class="btn btn-purple"><span>✨ AI Tool</span><span class="feedback"></span></button>
+        <button id="globalUndoBtn" class="btn btn-danger-filled" style="display:none;" title="Annulla ultima modifica sostanziale (Patch/Import/Incolla)"><span>↩ Annulla</span><span class="feedback"></span></button>
         
         <div class="file-group">
           <button id="importBtn" class="btn btn-ghost btn-tiny" title="Importa File" style="border:none; border-right:1px solid #eee;"><svg viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg></button>
@@ -392,41 +384,11 @@
     </div>
   </div>
 
-  <div id="aiModal" class="modal-overlay">
-    <div class="modal-content">
-      <h3 style="margin:0; color:var(--brand-purple)">AI Multi-Patch Tool 3.3 (Secure)</h3>
-      <p class="lead">Sistema immune a virgolette e markdown. Usa il formato @@@.</p>
-      
-      <div class="ai-step">
-        <h4>1. Istruisci l'AI</h4>
-        <textarea id="aiUserInstructions" class="patch-area" placeholder="Descrivi qui le modifiche che vuoi fare al codice (es. 'Cambia lo sfondo in rosso')..." style="height:60px; min-height:60px; margin-bottom:8px;"></textarea>
-        
-        <div class="switch-container">
-          <input type="checkbox" id="includeCodeToggle" checked>
-          <label for="includeCodeToggle">Includi il codice sorgente nel testo del Prompt (Deseleziona se alleghi file esterno)</label>
-        </div>
-
-        <button id="copyPromptBtn" class="btn btn-tiny btn-purple" style="width:100%">Copia Prompt Completo</button>
-        <p style="font-size:12px; margin-top:6px; color:#666;">Il prompt includerà le tue istruzioni e un avviso di sicurezza assoluto per l'integrità.</p>
-      </div>
-
-      <div class="ai-step">
-        <h4>2. Incolla Risposta AI <span style="font-size:11px; font-weight:normal; color:#888;">(o trascina testo qui)</span></h4>
-        <textarea id="aiInput" class="patch-area" placeholder="Incolla qui la risposta dell'AI contenente i blocchi @@@ FIND @@@..." spellcheck="false"></textarea>
-        <div id="aiLog" class="ai-log"></div>
-      </div>
-
-      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:0px">
-        <button id="closeAiBtn" class="btn btn-ghost">Chiudi</button>
-        <button id="applyAiBtn" class="btn btn-purple">Applica Modifiche AI</button>
-      </div>
-    </div>
-  </div>
-
 <script>
   var editor;
   var lastContentBeforePatch = null;
   const STORAGE_KEY = 'html_playground_content';
+  const HISTORY_KEY = 'html_playground_undo_stack'; // NUOVO: Chiave per la storia
   
   window.onload = function() {
     editor = CodeMirror.fromTextArea(document.getElementById("code"), {
@@ -443,6 +405,9 @@
     } else {
       editor.setValue(getDefaultTemplate());
     }
+
+    // Inizializza lo stato del bottone Undo
+    updateUndoBtn();
 
     editor.on("change", () => {
       saveToStorage();
@@ -463,6 +428,45 @@
     status.textContent = 'Salvando...';
     setTimeout(() => status.textContent = 'Salvato', 500);
   }
+
+  // --- NUOVE FUNZIONI PER GESTIONE STORIA/UNDO ---
+  function saveHistory() {
+    const current = editor.getValue();
+    let stack = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    stack.push(current);
+    if(stack.length > 30) stack.shift(); // Max 30 stati in memoria
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(stack));
+    updateUndoBtn();
+  }
+
+  function updateUndoBtn() {
+    const stack = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    const btn = document.getElementById('globalUndoBtn');
+    if(btn) {
+      if(stack.length > 0) {
+        btn.style.display = 'inline-flex';
+        btn.querySelector('span').textContent = `Annulla (${stack.length})`;
+      } else {
+        btn.style.display = 'none';
+      }
+    }
+  }
+
+  document.getElementById('globalUndoBtn').onclick = function() {
+    let stack = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    if(stack.length === 0) return;
+    
+    const previousState = stack.pop();
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(stack));
+    
+    // Disabilita listener change temporaneamente per evitare loop indesiderati (qui non serve essendo manuale)
+    editor.setValue(previousState);
+    saveToStorage(); // Salva anche lo stato corrente nel "live" storage
+    
+    showFeedback(this, 'Ripristinato!');
+    updateUndoBtn();
+  };
+  // ------------------------------------------------
 
   let debounceTimer;
   function debouncedPreview() {
@@ -523,7 +527,8 @@
   document.getElementById('pasteBtn').onclick = async function() {
     try {
       const text = await navigator.clipboard.readText();
-      editor.setValue(text); // MODIFICATO: Sostituisce tutto invece di appendere
+      saveHistory(); // SALVA STATO PRIMA DI INCOLLARE
+      editor.setValue(text); 
       showFeedback(this, 'Sostituito!');
     } catch (err) {
       console.error(err);
@@ -617,7 +622,7 @@
     patchOldInput.focus();
   };
 
-  // 4) Copia Prompt AI specifico per Patch Manuale (AGGIORNATO CON TOGGLE)
+  // Copia Prompt AI specifico per Patch Manuale
   document.getElementById('copyPatchPromptBtn').onclick = function() {
     const instructions = patchInstructionsInput.value.trim();
     const includeCode = patchIncludeCodeToggle.checked;
@@ -663,6 +668,8 @@ Non aggiungere spiegazioni, solo i due blocchi.
     const regex = createFuzzyRegex(oldCodeVal);
 
     if(regex.test(currentContent)) {
+      saveHistory(); // SALVA STATO PRIMA DI APPLICARE PATCH
+      
       lastContentBeforePatch = currentContent;
       const updatedContent = currentContent.replace(regex, newCode);
       editor.setValue(updatedContent);
@@ -687,142 +694,9 @@ Non aggiungere spiegazioni, solo i due blocchi.
       patchStatus.style.color = "orange";
       patchStatus.textContent = "Operazione annullata.";
       this.style.display = 'none';
+      saveHistory(); // Aggiorniamo la storia anche qui per coerenza
     }
   };
-
-  // --- LOGICA NUOVA MODALE AI TOOLS 3.3 (Secure) ---
-  const aiModal = document.getElementById('aiModal');
-  const aiLog = document.getElementById('aiLog');
-
-  document.getElementById('aiToolBtn').onclick = () => {
-    aiModal.style.display = 'flex';
-    aiLog.style.display = 'none';
-    aiLog.innerHTML = '';
-    document.getElementById('aiInput').value = '';
-  };
-  
-  document.getElementById('closeAiBtn').onclick = () => aiModal.style.display = 'none';
-
-  // 1. GENERATORE DI PROMPT 3.0 (Include istruzioni utente e avviso integrità)
-  document.getElementById('copyPromptBtn').onclick = function() {
-    const currentCode = editor.getValue();
-    const userInstructions = document.getElementById('aiUserInstructions').value.trim();
-    const includeCode = document.getElementById('includeCodeToggle').checked;
-    
-    let codeBlock = "";
-    if(includeCode) {
-        codeBlock = `CODICE SORGENTE:\n---\n${currentCode}\n---`;
-    } else {
-        codeBlock = `[[ IL CODICE SORGENTE È STATO ALLEGATO COME FILE ESTERNO ]]`;
-    }
-
-    const prompt = `Agisci come un esperto sviluppatore. Ho bisogno di modifiche al codice.
-
-***MODIFICHE RICHIESTE***
-${userInstructions ? userInstructions : "Attenzione: Nessuna istruzione specifica fornita. Migliora il codice esistente."}
-
-***IMPERATIVO ASSOLUTO SULL'INTEGRITÀ***
-Esegui SOLO ed ESCLUSIVAMENTE le modifiche richieste sopra.
-NON modificare, NON ridurre, NON semplificare e NON rifattorizzare nessuna altra parte del codice.
-L'applicazione deve rimanere identica tranne che per i punti specificati.
-
-***FORMATO RISPOSTA (Obbligatorio)***
-Usa SOLO questo formato personalizzato per la risposta. 
-NON usare blocchi Markdown (\`\`\`) e NON usare JSON.
-
-FORMATO RICHIESTO:
-@@@ FIND @@@
-[Qui incolla il codice esatto da sostituire]
-@@@ REPLACE @@@
-[Qui incolla il nuovo codice]
-@@@ END @@@
-
-Se ci sono più modifiche, ripeti il blocco.
-
-${codeBlock}
-
-Attendo le modifiche nel formato @@@ FIND @@@...`;
-
-    navigator.clipboard.writeText(prompt);
-    showFeedback(this, 'Prompt Copiato!');
-    alert("Prompt copiato!\nInclude istruzioni, codice (o placeholder) e avviso di integrità severo.");
-  };
-
-  // 2. APPLICAZIONE PATCH 3.0 (SAFE BLOCKS)
-  document.getElementById('applyAiBtn').onclick = function() {
-    let rawInput = document.getElementById('aiInput').value;
-    aiLog.style.display = 'block';
-    aiLog.innerHTML = '';
-    
-    function log(msg, type='info') {
-      const div = document.createElement('div');
-      div.className = 'ai-log-item ' + (type === 'success' ? 'ai-log-success' : type === 'error' ? 'ai-log-error' : '');
-      div.textContent = msg;
-      aiLog.appendChild(div);
-    }
-
-    rawInput = rawInput.replace(/```html/gi, '').replace(/```/g, '');
-
-    const regex = /@@@ FIND @@@\s*([\s\S]*?)\s*@@@ REPLACE @@@\s*([\s\S]*?)\s*@@@ END @@@/g;
-    
-    let match;
-    let patches = [];
-    while ((match = regex.exec(rawInput)) !== null) {
-      patches.push({ find: match[1], replace: match[2] });
-    }
-
-    if (patches.length === 0) {
-      log("ERRORE: Nessun blocco @@@ trovato. Assicurati di usare il prompt corretto.", "error");
-      return;
-    }
-
-    let content = editor.getValue();
-    let appliedCount = 0;
-    let failedCount = 0;
-
-    patches.forEach((patch, index) => {
-      const findText = patch.find.replace(/^\n/, '').replace(/\n$/, ''); 
-      const replaceText = patch.replace.replace(/^\n/, '').replace(/\n$/, '');
-
-      if (content.includes(findText)) {
-        content = content.replace(findText, replaceText);
-        log(`Patch #${index+1}: Applicata correttamente.`, "success");
-        appliedCount++;
-      } else {
-        if (content.includes(patch.find.trim())) {
-           content = content.replace(patch.find.trim(), replaceText);
-           log(`Patch #${index+1}: Applicata (con trim).`, "success");
-           appliedCount++;
-        } else {
-           log(`Patch #${index+1}: FALLITA. Codice originale non trovato.`, "error");
-           console.warn("Cercavo:\n", findText);
-           failedCount++;
-        }
-      }
-    });
-
-    if (appliedCount > 0) {
-      editor.setValue(content);
-      log(`COMPLETATO: ${appliedCount} modifiche applicate.`, "success");
-      saveToStorage();
-    } else {
-      log("Nessuna modifica applicata. Apri la console (F12) per i dettagli.", "error");
-    }
-  };
-
-  const dropArea = document.getElementById('aiInput');
-  dropArea.addEventListener('dragover', (e) => { e.stopPropagation(); e.preventDefault(); e.dataTransfer.dropEffect = 'copy'; dropArea.style.borderColor = 'var(--brand-purple)'; });
-  dropArea.addEventListener('dragleave', (e) => { dropArea.style.borderColor = 'var(--border-color)'; });
-  dropArea.addEventListener('drop', (e) => {
-    e.stopPropagation(); e.preventDefault();
-    dropArea.style.borderColor = 'var(--border-color)';
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = (evt) => { document.getElementById('aiInput').value = evt.target.result; };
-      reader.readAsText(file);
-    }
-  });
 
   document.getElementById('clearBtn').onclick = () => confirm('Cancellare tutto?') && editor.setValue('');
   
@@ -834,7 +708,6 @@ Attendo le modifiche nel formato @@@ FIND @@@...`;
     const extension = extSelect.value;
     const fullName = name + extension;
 
-    // Uso API File System (gestisce nativamente la sovrascrittura chiedendo conferma)
     if ('showSaveFilePicker' in window) {
       try {
         const handle = await window.showSaveFilePicker({
@@ -845,10 +718,9 @@ Attendo le modifiche nel formato @@@ FIND @@@...`;
         await writable.write(content);
         await writable.close();
         return;
-      } catch (err) { return; } // Utente ha annullato
+      } catch (err) { return; }
     }
 
-    // Fallback download classico
     const blob = new Blob([content], {type: 'text/plain'});
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob);
@@ -860,19 +732,20 @@ Attendo le modifiche nel formato @@@ FIND @@@...`;
   document.getElementById('fileInput').onchange = (e) => {
     const file = e.target.files[0];
     if(file) {
-      // Auto-compilazione nome ed estensione
       const lastDot = file.name.lastIndexOf('.');
       if (lastDot !== -1) {
         document.getElementById('filename').value = file.name.substring(0, lastDot);
         const ext = file.name.substring(lastDot);
-        // Aggiorna select solo se estensione supportata
         if (Array.from(extSelect.options).some(o => o.value === ext)) extSelect.value = ext;
       } else {
         document.getElementById('filename').value = file.name;
       }
 
       const reader = new FileReader();
-      reader.onload = (ev) => editor.setValue(ev.target.result);
+      reader.onload = (ev) => {
+          saveHistory(); // SALVA PRIMA DI IMPORTARE
+          editor.setValue(ev.target.result);
+      }
       reader.readAsText(file);
     }
   };
