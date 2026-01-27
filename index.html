@@ -740,6 +740,93 @@ Non aggiungere testo discorsivo, solo i due blocchi.`;
     }, 2000);
   };
   
+  // --- Advanced Undo/Redo System ---
+  let patchHistory = [];
+  let patchRedoStack = [];
+
+  function updateUndoBtnUI() {
+    if (patchHistory.length > 0) {
+      undoPatchBtn.style.display = 'inline-flex';
+      undoPatchBtn.querySelector('span').textContent = `Gestisci Patch (${patchHistory.length})`;
+    } else {
+      undoPatchBtn.style.display = 'none';
+    }
+  }
+
+  function showUndoModal() {
+    let modal = document.getElementById('undoManagerModal');
+    // Crea la modale se non esiste (Injection Dinamica)
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'undoManagerModal';
+      modal.className = 'modal-overlay';
+      modal.style.zIndex = '1000';
+      modal.innerHTML = `
+        <div class="modal-content" style="width: 450px;">
+          <h3 style="margin:0; color:var(--brand-blue)">Gestione Storico Patch</h3>
+          <p class="lead">Visualizza, annulla o ripristina le patch applicate.</p>
+          
+          <div id="undoManagerInfo" style="background:#F2F2F7; padding:12px; border-radius:8px; font-size:13px; margin-bottom:12px; border:1px solid #E5E5EA;"></div>
+          
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+             <span id="stackStatus" style="font-size:11px; color:#666;"></span>
+             <div style="display:flex; gap:8px;">
+               <button class="btn btn-ghost" onclick="document.getElementById('undoManagerModal').style.display='none'">Chiudi</button>
+               <button id="mgrRedoBtn" class="btn btn-yellow">Ripristina (Redo)</button>
+               <button id="mgrUndoBtn" class="btn btn-danger">Annulla (Undo)</button>
+             </div>
+          </div>
+        </div>`;
+      document.body.appendChild(modal);
+      
+      // Bind Events
+      document.getElementById('mgrUndoBtn').onclick = () => {
+         if(patchHistory.length === 0) return;
+         const lastState = patchHistory.pop();
+         patchRedoStack.push({ content: editor.getValue(), time: new Date() });
+         
+         editor.setValue(lastState.content);
+         saveHistory();
+         refreshManagerUI();
+         updateUndoBtnUI();
+         patchStatus.innerHTML = "↺ <b>Modifica Annullata!</b>";
+      };
+
+      document.getElementById('mgrRedoBtn').onclick = () => {
+         if(patchRedoStack.length === 0) return;
+         const nextState = patchRedoStack.pop();
+         patchHistory.push({ content: editor.getValue(), time: new Date() });
+         
+         editor.setValue(nextState.content);
+         saveHistory();
+         refreshManagerUI();
+         updateUndoBtnUI();
+         patchStatus.innerHTML = "↷ <b>Modifica Ripristinata!</b>";
+      };
+    }
+    
+    refreshManagerUI();
+    modal.style.display = 'flex';
+  }
+
+  function refreshManagerUI() {
+     const info = document.getElementById('undoManagerInfo');
+     const redoBtn = document.getElementById('mgrRedoBtn');
+     const undoBtn = document.getElementById('mgrUndoBtn');
+     const status = document.getElementById('stackStatus');
+
+     status.textContent = `Undo: ${patchHistory.length} | Redo: ${patchRedoStack.length}`;
+     redoBtn.disabled = patchRedoStack.length === 0;
+     undoBtn.disabled = patchHistory.length === 0;
+
+     if (patchHistory.length > 0) {
+       const last = patchHistory[patchHistory.length - 1];
+       info.innerHTML = `<strong>Ultima Patch Applicata:</strong><br>Data: ${last.time.toLocaleTimeString()}<br><br>Premi "Undo" per tornare allo stato precedente.`;
+     } else {
+       info.innerHTML = "Nessuna patch nello storico da annullare.";
+     }
+  }
+
   document.getElementById('applyPatchBtn').onclick = function() {
     const oldCodeVal = patchOldInput.value.trim();
     const newCode = patchNewInput.value; 
@@ -754,15 +841,22 @@ Non aggiungere testo discorsivo, solo i due blocchi.`;
     const regex = createFuzzyRegex(oldCodeVal);
 
     if(regex.test(currentContent)) {
-      saveHistory(); 
+      saveHistory(); // Global history
       
-      lastContentBeforePatch = currentContent;
+      // Salva nello storico Patch specifico
+      patchHistory.push({
+        content: currentContent,
+        time: new Date()
+      });
+      patchRedoStack = []; // Reset redo
+      
       const updatedContent = currentContent.replace(regex, newCode);
       editor.setValue(updatedContent);
       
       patchStatus.style.color = "green";
-      patchStatus.innerHTML = "✔ <b>Patch applicata!</b> I campi sono stati svuotati.";
-      undoPatchBtn.style.display = 'inline-flex';
+      patchStatus.innerHTML = "✔ <b>Patch applicata!</b>";
+      
+      updateUndoBtnUI();
       
       patchOldInput.value = ''; 
       patchNewInput.value = '';
@@ -774,14 +868,7 @@ Non aggiungere testo discorsivo, solo i due blocchi.`;
   };
 
   undoPatchBtn.onclick = function() {
-    if(lastContentBeforePatch !== null) {
-      editor.setValue(lastContentBeforePatch);
-      lastContentBeforePatch = null;
-      patchStatus.style.color = "orange";
-      patchStatus.textContent = "Operazione annullata.";
-      this.style.display = 'none';
-      saveHistory(); 
-    }
+    showUndoModal();
   };
 
   document.getElementById('clearBtn').onclick = () => confirm('Cancellare tutto?') && editor.setValue('');
