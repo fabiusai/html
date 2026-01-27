@@ -514,18 +514,24 @@
     }
   }
 
+  // --- FIX: Collega il tasto Toolbar al nuovo sistema ---
   document.getElementById('globalUndoBtn').onclick = function() {
-    let stack = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
-    if(stack.length === 0) return;
-    
-    const previousState = stack.pop();
-    localStorage.setItem(HISTORY_KEY, JSON.stringify(stack));
-    
-    editor.setValue(previousState);
-    saveToStorage(); 
-    
-    showFeedback(this, 'Ripristinato!');
-    updateUndoBtn();
+     if (typeof showUndoModal === 'function') {
+         showUndoModal();
+     }
+  };
+  
+  // Sovrascrive la funzione UI per puntare al bottone corretto (Toolbar)
+  window.updateUndoBtnUI = function() {
+    const btn = document.getElementById('globalUndoBtn');
+    // patchHistory è definita nella sezione Advanced Undo in basso
+    if (typeof patchHistory !== 'undefined' && patchHistory.length > 0) {
+      btn.style.display = 'inline-flex';
+      btn.querySelector('span').textContent = `Gestisci Patch (${patchHistory.length})`;
+      btn.className = 'btn btn-purple'; // Cambia colore per indicare la nuova funzione
+    } else {
+      btn.style.display = 'none';
+    }
   };
 
   let debounceTimer;
