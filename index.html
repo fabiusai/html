@@ -322,10 +322,12 @@
 <body>
 
   <header class="app-header">
-    <div class="logo"><svg class="logo-icon" viewBox="0 0 24 24"><path d="M11.24 2.37l-5.41 2.31L11.24 9.1v12.52l-7.6-3.26C3.25 18.15 3 17.8 3 17.41V6.13c0-.39.25-.74.64-.94l7.6-3.26c.26-.11.55-.11.8 0zM12.76 2.37l7.6 3.26c.39.2.64.55.64.94v11.28c0 .39-.25.74-.64.94l-7.6 3.26c-.26.11-.55-.11-.8 0V9.1l5.41-4.42-5.41-2.31z"></path></svg></div>
+    <div class="logo" style="background: linear-gradient(135deg, #AF52DE 0%, #FF2D55 100%);">
+      <svg class="logo-icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
+    </div>
     <div>
-      <h1>Editor HTML Pro</h1>
-      <p class="lead">Editor Completo con Auto-save, Live Preview e History Undo.</p>
+      <h1>Super Editor AI <span style="font-size:10px; background:#007AFF; color:white; padding:2px 6px; border-radius:4px; vertical-align:middle; margin-left:5px;">PATCHED</span></h1>
+      <p class="lead">Versione potenziata con algoritmo di patch intelligente.</p>
     </div>
   </header>
 
@@ -652,22 +654,41 @@
   }
 
   patchOldInput.addEventListener('input', function() {
-    const val = this.value.trim();
-    if(!val) {
+    const val = this.value; // Non trimmare subito per preservare spazi significativi se serve
+    const currentContent = editor.getValue();
+    
+    if(!val.trim()) {
       patchStatus.textContent = '';
       return;
     }
     
-    const currentContent = editor.getValue();
-    const regex = createFuzzyRegex(val);
-
+    // 1. Test Regex (Fuzzy)
+    const regex = createFuzzyRegex(val.trim());
     if(regex.test(currentContent)) {
       patchStatus.style.color = "green";
-      patchStatus.innerHTML = "✔ <b>Trovato!</b> Corrispondenza rilevata nel codice.";
-    } else {
-      patchStatus.style.color = "red";
-      patchStatus.innerHTML = "✖ <b>Non trovato.</b> Verifica il codice incollato.";
+      patchStatus.innerHTML = "✔ <b>Match Perfetto!</b> (Trovato tramite Regex)";
+      return;
     }
+
+    // 2. Test Anchor (Testa e Coda)
+    const lines = val.split('\n').filter(l => l.trim().length > 2);
+    if (lines.length >= 2) {
+      const startLine = lines[0].trim();
+      const endLine = lines[lines.length - 1].trim();
+      
+      const startIdx = currentContent.indexOf(startLine);
+      const endIdx = currentContent.lastIndexOf(endLine); // Cerca l'ultima occorrenza per sicurezza
+      
+      if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+        patchStatus.style.color = "#007AFF"; // Blu per differenziare
+        patchStatus.innerHTML = "✔ <b>Match Intelligente!</b> (Trovati inizio e fine blocco)";
+        return;
+      }
+    }
+
+    // Se falliscono entrambi
+    patchStatus.style.color = "red";
+    patchStatus.innerHTML = "✖ <b>Nessuna corrispondenza.</b> Il codice non sembra esistere nel file.";
   });
 
   document.getElementById('clearPatchFieldsBtn').onclick = function() {
@@ -685,28 +706,38 @@
 
     let codeBlock = "";
     if(includeCode) {
-        codeBlock = `CODICE SORGENTE COMPLETO:\n---\n${currentCode}\n---`;
+        codeBlock = `CODICE SORGENTE:\n---\n${currentCode}\n---`;
     } else {
-        codeBlock = `[[ IL CODICE SORGENTE È STATO ALLEGATO COME FILE ESTERNO ]]`;
+        codeBlock = `[[ CODICE SORGENTE GIA PRESENTE NELLA MEMORIA ]]`;
     }
 
-    const extraContext = instructions ? `\n\nCONTESTO/MODIFICHE RICHIESTE:\n${instructions}` : "";
+    const extraContext = instructions ? `\n\nRICHIESTA SPECIFICA:\n${instructions}` : "";
 
-    const promptText = `Ho bisogno di fare una modifica manuale precisa al codice.${extraContext}
+    const promptText = `Agisci come un esperto sviluppatore web. Devo applicare una patch manuale a questo codice.${extraContext}
 
 ${codeBlock}
 
-Per favore analizza il codice e forniscimi SOLO due blocchi di codice per effettuare la sostituzione:
-1. Il blocco ESATTO di codice originale presente nel sorgente che devo cercare (deve essere univoco, includi contesto se necessario).
-2. Il NUOVO blocco di codice con cui devo sostituirlo.
-Non aggiungere spiegazioni, solo i due blocchi.
+Compito:
+Genera SOLO due blocchi di codice per effettuare una sostituzione "Cerca e Sostituisci".
 
-[[ IMPORTANTE: NON MODIFICARE, RIDURRE O ALTERARE NESSUNA ALTRA PARTE DEL CODICE ]]`;
+1. **BLOCCO "VECCHIO CODICE" (Da trovare):**
+   - Deve essere una porzione di codice ESISTENTE nel sorgente, copiata carattere per carattere.
+   - IMPORTANTE: Se devi modificare una funzione intera, nel blocco "Vecchio" inserisci SOLO le prime 2 righe e le ultime 2 righe della funzione originale (con un commento // ... nel mezzo se vuoi), oppure copia la funzione intera ESATTAMENTE com'è ora, senza correggere indentazioni o errori.
+   - Il sistema usa una ricerca "Testa e Coda", quindi l'inizio e la fine del blocco devono corrispondere perfettamente al sorgente.
+
+2. **BLOCCO "NUOVO CODICE" (Sostituzione):**
+   - Il codice completo e corretto che andrà a sostituire il blocco vecchio.
+
+Non aggiungere testo discorsivo, solo i due blocchi.`;
     
     navigator.clipboard.writeText(promptText);
     const originalText = this.textContent;
-    this.textContent = "Copiato!";
-    setTimeout(() => this.textContent = originalText, 2000);
+    this.textContent = "Prompt Copiato!";
+    this.classList.add('btn-blue'); // Feedback visivo
+    setTimeout(() => {
+        this.textContent = originalText;
+        this.classList.remove('btn-blue');
+    }, 2000);
   };
   
   document.getElementById('applyPatchBtn').onclick = function() {
