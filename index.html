@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>HTML Playground Pro v3.1</title>
+  <title>HTML Playground Pro v3.2</title>
   <link rel="icon" href="favicon.ico">
   
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.css">
@@ -60,6 +60,1012 @@
       border-radius: 8px;
       display: flex;
       align-items: center;
+      justify-content: center;
+      background: linear-gradient(135deg, #FFD60A 0%, #FFB340 100%);
+      box-shadow: 0 2px 5px rgba(255, 214, 10, 0.3);
+    }
+    .logo-icon { width: 20px; height: 20px; fill: #fff; }
+    
+    /* Header Typography & Version Override */
+    h1 { font-size: 18px; margin: 0; color: var(--text-dark); font-weight: 600; letter-spacing: -0.02em; }
+    h1 span { display: none !important; } /* Nascondi vecchia versione se presente nel DOM */
+    h1::after {
+      content: "v3.2";
+      font-size: 11px;
+      background: #E5E5EA;
+      color: #636366;
+      padding: 3px 8px;
+      border-radius: 12px;
+      margin-left: 10px;
+      vertical-align: middle;
+      font-weight: 500;
+      letter-spacing: 0.02em;
+    }
+    p.lead{margin: 0; color: var(--text-light); font-size: 13px; font-weight: 400;}
+
+    /* --- LAYOUT WORKSPACE --- */
+    .workspace {
+      display: flex;
+      flex: 1;
+      gap: 0;
+      overflow: hidden;
+      min-height: 0;
+    }
+
+    .pane-editor {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      min-width: 350px;
+      padding: 0;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .resizer {
+      width: 16px;
+      cursor: col-resize;
+      background: transparent;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      z-index: 10;
+      margin: 0 -2px;
+    }
+    .resizer::after {
+      content: "";
+      width: 4px;
+      height: 32px;
+      background: #D1D1D6;
+      border-radius: 2px;
+    }
+    .resizer:hover::after { background: var(--brand-blue); }
+
+    .pane-preview {
+      width: 45%;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      min-width: 350px;
+      padding-left: 10px;
+    }
+
+    /* --- CONTAINERS --- */
+    .preview-container, .console-container {
+      background: var(--card);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      border: 1px solid rgba(0,0,0,0.05);
+    }
+    .preview-container { flex: 2; padding: 0; }
+    .console-container { flex: 1; padding: 0; background: #1C1C1E; border: 1px solid #333; }
+
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 14px;
+      background: #F9F9FA;
+      border-bottom: 1px solid var(--border-color);
+      flex-shrink: 0;
+    }
+    .console-container .section-header {
+      background: #2C2C2E;
+      border-bottom: 1px solid #3A3A3C;
+      padding: 6px 12px;
+    }
+    
+    .section-title h2 { 
+      font-size: 13px; margin: 0; color: var(--text-dark); font-weight: 600; 
+      display: flex; align-items: center; gap: 8px; letter-spacing: -0.01em;
+    }
+    .section-title h2 svg { width: 14px; height: 14px; color: var(--brand-blue); }
+    .console-container h2 { color: #AEAEB2; }
+
+    /* --- EDITOR & IFRAME --- */
+    .CodeMirror {
+      height: 100%;
+      font-family: var(--mono);
+      font-size: 13px;
+      line-height: 1.5;
+      border: none;
+      background: transparent;
+    }
+    .cm-s-neo.CodeMirror { background: #fff; color: #333; }
+    .iframe-wrap { flex: 1; background: white; position: relative; }
+    iframe { width: 100%; height: 100%; border: 0; display: block; }
+    
+    #console-output {
+      flex: 1;
+      overflow-y: auto;
+      padding: 10px;
+      font-family: var(--mono);
+      font-size: 12px;
+      color: #E5E5EA;
+      line-height: 1.4;
+    }
+    .log-entry { border-bottom: 1px solid #3A3A3C; padding: 6px 0; }
+    .log-warn { color: #FFD60A; }
+    .log-error { color: #FF453A; }
+    .log-info { color: #64D2FF; }
+
+    /* --- UI CONTROLS --- */
+    #paneEditor .section-header { display: none; /* Hide internal header for cleaner Mac look */ }
+    
+    /* Search Bar Cleaner */
+    .search-controls { 
+      padding: 8px 12px; background: #F9F9FA; border-bottom: 1px solid var(--border-color);
+      display: flex; gap: 8px; 
+    }
+    .search-controls input {
+      background: #fff; border: 1px solid #D1D1D6; border-radius: 6px; padding: 4px 8px;
+      font-size: 12px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+    }
+
+    /* --- TOOLBAR --- */
+    .toolbar { 
+      padding: 10px 14px; 
+      background: #fff; 
+      border-top: 1px solid var(--border-color);
+      display: flex; gap: 8px; align-items: center;
+    }
+
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+      padding: 0 12px; height: 28px; border-radius: 6px; border: 0; cursor: pointer;
+      font-weight: 500; font-size: 12px; font-family: var(--ui-font);
+      transition: all 0.15s ease; position: relative; overflow: hidden;
+      box-shadow: 0 1px 1px rgba(0,0,0,0.05);
+    }
+    .btn:active { transform: scale(0.98); }
+    .btn-blue { background: var(--brand-blue); color: white; }
+    .btn-blue:hover { background: var(--brand-blue-hover); }
+    .btn-yellow { background: #FFD60A; color: #000; }
+    .btn-ghost { 
+      background: #fff; border: 1px solid #D1D1D6; color: #333; 
+    }
+    .btn-ghost:hover { background: #F2F2F7; border-color: #C7C7CC; }
+    .btn-tiny { height: 22px; padding: 0 8px; font-size: 11px; }
+    .btn-dark { background: #3A3A3C; border: 1px solid #48484A; color: #fff; }
+
+    .btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+    .btn .feedback {
+      position: absolute; inset: 0; background: inherit; display: flex; 
+      align-items: center; justify-content: center; opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    .btn.loading .feedback { opacity: 1; }
+    .btn.loading span:first-child { opacity: 0; }
+
+    /* IMPORT BUTTON OVERHAUL - High Visibility */
+    .file-group {
+      display: flex; align-items: center; gap: 6px;
+      background: transparent; border: none; padding: 0; margin-left: auto;
+    }
+    
+    /* Trasforma il piccolo bottone icona in un pulsante principale */
+    #importBtn {
+      background: var(--brand-blue) !important;
+      color: white !important;
+      border: none !important;
+      border-radius: 6px !important;
+      height: 28px !important;
+      padding: 0 12px !important;
+      width: auto !important;
+      display: inline-flex !important;
+      order: -1; /* Metti import prima degli input */
+      box-shadow: 0 1px 2px rgba(0,0,100,0.2) !important;
+    }
+    #importBtn svg { fill: white !important; width: 14px; height: 14px; }
+    #importBtn::after {
+      content: "Importa";
+      font-size: 12px;
+      font-weight: 600;
+      margin-left: 6px;
+      display: block;
+    }
+
+    /* Styling inputs file name */
+    #filename { 
+      background: #fff; border: 1px solid #D1D1D6; border-radius: 6px; 
+      height: 28px; padding: 0 8px; text-align: center; color: #333;
+    }
+    #fileExtension {
+      background: #F2F2F7; border: 1px solid #D1D1D6; border-radius: 6px; 
+      height: 28px; color: #333;
+    }
+    #downloadBtn { height: 28px !important; border-radius: 6px !important; }
+
+    /* Modal Styling */
+    .modal-overlay {
+      position: fixed; inset: 0; background: rgba(0,0,0,0.3); backdrop-filter: blur(5px);
+      display: none; align-items: center; justify-content: center; z-index: 999;
+    }
+    .modal-content {
+      background: #fff; padding: 20px; border-radius: 12px; width: 700px;
+      box-shadow: var(--shadow-md); display: flex; flex-direction: column; gap: 12px;
+      max-height: 90vh; overflow-y: auto; border: 1px solid rgba(0,0,0,0.1);
+    }
+    textarea.patch-area {
+      width: 100%; min-height: 100px; background: #F9F9FA; border: 1px solid #D1D1D6;
+      border-radius: 8px; padding: 8px; font-family: var(--mono); font-size: 12px; resize: vertical; color: #333;
+    }
+    label { font-weight: 600; font-size: 12px; color: var(--brand-blue); display: block; margin-bottom: 4px; }
+    
+    .switch-container { display: flex; align-items: center; gap: 8px; font-size: 12px; margin-bottom: 8px; }
+    .switch-container input { cursor: pointer; accent-color: var(--brand-blue); }
+    .switch-container label { margin: 0; font-weight: normal; color: #333; cursor: pointer; }
+
+    @media (max-width: 800px) {
+      body { padding: 10px; }
+      .workspace { flex-direction: column; overflow: auto; }
+      .resizer { display: none; }
+      .pane-preview { width: 100%; height: 500px; padding-left: 0; }
+      .pane-editor { min-height: 400px; }
+      .file-group { margin-left: 0; width: 100%; justify-content: space-between; margin-top: 10px; }
+    }
+  </style>
+  
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/codemirror.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/xml/xml.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/javascript/javascript.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/css/css.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/mode/htmlmixed/htmlmixed.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/codemirror/5.65.13/addon/search/searchcursor.min.js"></script>
+</head>
+<body>
+
+  <header class="app-header">
+    <div class="logo" style="background: linear-gradient(135deg, #AF52DE 0%, #FF2D55 100%);">
+      <svg class="logo-icon" viewBox="0 0 24 24"><path d="M12 2L2 7l10 5 10-5-10-5zm0 9l2.5-1.25L12 8.5l-2.5 1.25L12 11zm0 2.5l-5-2.5-5 2.5L12 22l10-8.5-5-2.5-5 2.5z"/></svg>
+    </div>
+    <div>
+      <h1>Super Editor AI <span style="font-size:10px; background:#007AFF; color:white; padding:2px 6px; border-radius:4px; vertical-align:middle; margin-left:5px;">PATCHED</span></h1>
+      <p class="lead">Versione potenziata con algoritmo di patch intelligente.</p>
+    </div>
+  </header>
+
+  <div class="workspace" id="workspace">
+    
+    <div class="pane-editor" id="paneEditor">
+      <div class="section-header">
+        <div class="section-title"><h2>Codice Sorgente</h2></div>
+        <div style="font-size: 11px; color: var(--text-light);" id="saveStatus">Salvato</div>
+      </div>
+
+      <div class="search-controls">
+        <input type="text" id="findInput" placeholder="Cerca...">
+        <button id="findBtn" class="btn btn-tiny btn-ghost">Trova</button>
+        <input type="text" id="replaceInput" placeholder="Sostituisci...">
+        <button id="replaceBtn" class="btn btn-tiny btn-ghost">Sostituisci</button>
+        <button id="replaceAllBtn" class="btn btn-tiny btn-ghost">Tutti</button>
+      </div>
+
+      <textarea id="code" name="code"></textarea>
+
+      <div class="toolbar">
+        <button id="copyBtn" class="btn btn-yellow" title="Copia Codice"><span>Copia</span><span class="feedback"></span></button>
+        <button id="pasteBtn" class="btn btn-ghost" title="Incolla Codice (Sostituisce Tutto)"><span>Incolla</span><span class="feedback"></span></button>
+        <button id="clearBtn" class="btn btn-ghost" title="Pulisci Editor"><span>Pulisci</span><span class="feedback"></span></button>
+        
+        <div style="width:1px; height:20px; background:var(--border-color); margin:0 4px;"></div>
+        
+        <button id="patchBtn" class="btn btn-ghost" title="Patch Manuale"><span>Patch</span><span class="feedback"></span></button>
+        <button id="globalUndoBtn" class="btn btn-danger-filled" style="display:none;" title="Annulla ultima modifica sostanziale (Patch/Import/Incolla)"><span>↩ Annulla</span><span class="feedback"></span></button>
+        
+        <div class="file-group">
+          <button id="importBtn" class="btn btn-ghost btn-tiny" title="Importa File"><svg viewBox="0 0 24 24" style="width:16px;height:16px"><path d="M9 16h6v-6h4l-7-7-7 7h4zm-4 2h14v2H5z"/></svg></button>
+          <input type="text" id="filename" value="progetto" placeholder="Nome" style="width:70px">
+          <select id="fileExtension" style="width:50px">
+            <option value=".html">.html</option>
+            <option value=".css">.css</option>
+            <option value=".js">.js</option>
+            <option value=".json">.json</option>
+            <option value=".xml">.xml</option>
+            <option value=".txt">.txt</option>
+          </select>
+          <button id="downloadBtn" class="btn btn-blue btn-tiny" style="border-radius:0 4px 4px 0;">Salva</button>
+        </div>
+        
+        <input type="file" id="fileInput" style="display:none">
+      </div>
+    </div>
+
+    <div class="resizer" id="resizer"></div>
+
+    <div class="pane-preview" id="panePreview">
+      
+      <div class="preview-container">
+        <div class="section-header">
+          <div class="section-title"><h2><svg viewBox="0 0 20 20"><path fill="currentColor" d="M10 12a2 2 0 100-4 2 2 0 000 4z"/><path fill-rule="evenodd" d="M.458 10C1.732 5.943 5.522 3 10 3s8.268 2.943 9.542 7c-1.274 4.057-5.064 7-9.542 7S1.732 14.057.458 10zM14 10a4 4 0 11-8 0 4 4 0 018 0z" clip-rule="evenodd"/></svg> Anteprima Live</h2></div>
+          <div style="display:flex; gap:6px">
+            <button id="refreshBtn" class="btn btn-tiny btn-ghost">Ricarica</button>
+            <button id="newTabBtn" class="btn btn-tiny btn-ghost">Nuova Tab</button>
+          </div>
+        </div>
+        <div class="iframe-wrap">
+          <iframe id="preview" sandbox="allow-scripts allow-modals allow-forms allow-popups allow-same-origin"></iframe>
+        </div>
+      </div>
+
+      <div class="console-container">
+        <div class="section-header">
+          <div class="section-title"><h2><svg viewBox="0 0 20 20" style="fill:#ccc"><path d="M0 0h24v24H0z" fill="none"/><path d="M20 19V7H4v12h16zM4 5h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V7c0-1.1.9-2 2-2zm0-2h16V2H4v1z"/></svg> Console JS</h2></div>
+          <button id="clearConsoleBtn" class="btn btn-tiny btn-dark">Pulisci</button>
+        </div>
+        <div id="console-output">
+          <div style="color: #666; font-style: italic;">In attesa di log...</div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div id="patchModal" class="modal-overlay">
+    <div class="modal-content">
+      <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 style="margin:0; color:var(--brand-blue)">Patch Manuale Intelligente</h3>
+        <button id="copyPatchPromptBtn" class="btn btn-tiny btn-purple" title="Copia istruzioni per AI">Copia Prompt x AI</button>
+      </div>
+      <p class="lead">Incolla il blocco vecchio (ricerca flessibile su spazi/maiuscole) e il nuovo codice.</p>
+      
+      <div style="margin-bottom:8px;">
+        <label>Istruzioni / Contesto (Opzionale per Prompt AI):</label>
+        <textarea id="patchInstructions" class="patch-area" style="height:45px; min-height:45px;" placeholder="Es. 'Cerca la funzione di Login e modificala per...'"></textarea>
+      </div>
+      
+      <div class="switch-container" style="margin-bottom:12px;">
+        <input type="checkbox" id="patchIncludeCodeToggle" checked>
+        <label for="patchIncludeCodeToggle">Includi tutto il codice sorgente nel Prompt (Deseleziona se allegato)</label>
+      </div>
+
+      <div id="patchStatus" style="font-size: 13px; font-weight: bold; min-height: 20px; padding:4px 0;"></div>
+
+      <div style="position:relative;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-end;">
+          <label>Codice da trovare (Vecchio):</label>
+          <button id="clearPatchFieldsBtn" class="btn btn-tiny btn-ghost" style="margin-bottom:2px;">Svuota Campi</button>
+        </div>
+        <textarea id="patchOld" class="patch-area" spellcheck="false" placeholder="Incolla qui il codice presente nell'editor..."></textarea>
+      </div>
+      <div>
+        <label>Sostituisci con (Nuovo):</label>
+        <textarea id="patchNew" class="patch-area" spellcheck="false" placeholder="Incolla qui il nuovo codice..."></textarea>
+      </div>
+      
+      <div style="display:flex; justify-content:flex-end; gap:10px; margin-top:10px">
+        <button id="undoPatchBtn" class="btn btn-danger btn-tiny" style="display:none">Annulla Patch</button>
+        <button id="closePatchBtn" class="btn btn-ghost">Chiudi</button>
+        <button id="applyPatchBtn" class="btn btn-blue">Applica Patch</button>
+      </div>
+    </div>
+  </div>
+
+<script>
+  var editor;
+  var lastContentBeforePatch = null;
+  const STORAGE_KEY = 'html_playground_content';
+  const HISTORY_KEY = 'html_playground_undo_stack';
+  
+  window.onload = function() {
+    editor = CodeMirror.fromTextArea(document.getElementById("code"), {
+      mode: "htmlmixed",
+      theme: "neo",
+      lineNumbers: true,
+      lineWrapping: true,
+      autofocus: true
+    });
+
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if(saved) {
+      editor.setValue(saved);
+    } else {
+      editor.setValue(getDefaultTemplate());
+    }
+
+    updateUndoBtn();
+
+    editor.on("change", () => {
+      saveToStorage();
+      debouncedPreview();
+    });
+
+    updatePreview();
+    setupResizer();
+  };
+
+  // --- UPDATED DEFAULT TEMPLATE (Mac Style) ---
+  function getDefaultTemplate() {
+    return `<!DOCTYPE html>\n<html>\n<head>\n  <style>\n    :root { --accent: #007AFF; --bg: #F5F5F7; --card: #FFF; }\n    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; padding: 40px; color: #1C1C1E; background: var(--bg); margin: 0; }\n    h1 { color: #000; font-weight: 700; letter-spacing: -0.02em; }\n    .card { background: var(--card); padding: 24px; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.05); }\n    button { background: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight: 600; cursor: pointer; }\n    button:hover { opacity: 0.9; }\n  </style>\n</head>\n<body>\n  <h1>Benvenuto su Editor Pro v3.2</h1>\n  <div class="card">\n    <p style="margin-top:0; color:#666;">Questo template utilizza ora lo stile di sistema macOS.</p>\n    <button onclick="console.log('Test Console: ' + new Date().toLocaleTimeString())">\n      Esegui Test\n    </button>\n  </div>\n</body>\n</html>`;
+  }
+
+  function saveToStorage() {
+    localStorage.setItem(STORAGE_KEY, editor.getValue());
+    const status = document.getElementById('saveStatus');
+    status.textContent = 'Salvando...';
+    setTimeout(() => status.textContent = 'Salvato', 500);
+  }
+
+  function saveHistory() {
+    const current = editor.getValue();
+    let stack = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    stack.push(current);
+    if(stack.length > 30) stack.shift();
+    localStorage.setItem(HISTORY_KEY, JSON.stringify(stack));
+    updateUndoBtn();
+  }
+
+  function updateUndoBtn() {
+    const stack = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+    const btn = document.getElementById('globalUndoBtn');
+    if(btn) {
+      if(stack.length > 0) {
+        btn.style.display = 'inline-flex';
+        btn.querySelector('span').textContent = `Annulla (${stack.length})`;
+      } else {
+        btn.style.display = 'none';
+      }
+    }
+  }
+
+  // --- FIX: Collega il tasto Toolbar al nuovo sistema ---
+  document.getElementById('globalUndoBtn').onclick = function() {
+     if (typeof showUndoModal === 'function') {
+         showUndoModal();
+     }
+  };
+  
+  // Sovrascrive la funzione UI per puntare al bottone corretto (Toolbar)
+  window.updateUndoBtnUI = function() {
+    const btn = document.getElementById('globalUndoBtn');
+    // patchHistory è definita nella sezione Advanced Undo in basso
+    if (typeof patchHistory !== 'undefined' && patchHistory.length > 0) {
+      btn.style.display = 'inline-flex';
+      btn.querySelector('span').textContent = `Gestisci Patch (${patchHistory.length})`;
+      btn.className = 'btn btn-purple'; // Cambia colore per indicare la nuova funzione
+    } else {
+      btn.style.display = 'none';
+    }
+  };
+
+  let debounceTimer;
+  function debouncedPreview() {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(updatePreview, 600); 
+  }
+
+  function updatePreview() {
+    const previewFrame = document.getElementById('preview');
+    if (!previewFrame) return;
+
+    const code = editor.getValue();
+    const consoleInterceptor = `\n<script>\n(function(){\n  function send(type, args){\n    try { window.parent.postMessage({source: 'playground-console', type: type, args: Array.from(args).map(a => String(a))}, '*'); } catch(e){}\n  }\n  const originalLog = console.log; console.log = function(...args){ originalLog.apply(console, args); send('log', args); };\n  const originalWarn = console.warn; console.warn = function(...args){ originalWarn.apply(console, args); send('warn', args); };\n  const originalError = console.error; console.error = function(...args){ originalError.apply(console, args); send('error', args); };\n  window.onerror = function(msg, url, line){ send('error', [msg + " (Line: " + line + ")"]); };\n})();\n<\/script>\n`;
+    
+    let finalHtml;
+    const headRegex = /<head\b[^>]*>/i;
+    
+    if (headRegex.test(code)) {
+      finalHtml = code.replace(headRegex, (match) => match + consoleInterceptor);
+    } else {
+      finalHtml = consoleInterceptor + code;
+    }
+    
+    const doc = previewFrame.contentDocument || previewFrame.contentWindow.document;
+    doc.open();
+    doc.write(finalHtml);
+    doc.close();
+  }
+
+  const consoleOutput = document.getElementById('console-output');
+  window.addEventListener('message', (event) => {
+    if (event.data && event.data.source === 'playground-console') {
+      const entry = document.createElement('div');
+      entry.className = `log-entry log-${event.data.type}`;
+      entry.textContent = `[${new Date().toLocaleTimeString().split(' ')[0]}] > ${event.data.args.join(' ')}`;
+      consoleOutput.appendChild(entry);
+      consoleOutput.scrollTop = consoleOutput.scrollHeight;
+    }
+  });
+
+  document.getElementById('clearConsoleBtn').onclick = () => consoleOutput.innerHTML = '';
+  document.getElementById('refreshBtn').onclick = () => updatePreview();
+
+  function showFeedback(btn, text) {
+    const fb = btn.querySelector('.feedback');
+    if(fb) {
+      fb.textContent = text;
+      btn.classList.add('loading');
+      setTimeout(() => btn.classList.remove('loading'), 1500);
+    }
+  }
+
+  document.getElementById('copyBtn').onclick = function() {
+    navigator.clipboard.writeText(editor.getValue());
+    showFeedback(this, 'Copiato!');
+  };
+
+  document.getElementById('pasteBtn').onclick = async function() {
+    try {
+      const text = await navigator.clipboard.readText();
+      saveHistory(); 
+      editor.setValue(text); 
+      showFeedback(this, 'Sostituito!');
+    } catch (err) {
+      console.error(err);
+      alert('Impossibile accedere agli appunti. Consenti l\'accesso o usa Ctrl+V.');
+    }
+  };
+
+  document.getElementById('newTabBtn').onclick = function() {
+    const blob = new Blob([editor.getValue()], {type: 'text/html'});
+    const url = URL.createObjectURL(blob);
+    window.open(url, '_blank');
+  };
+
+  document.getElementById('findBtn').onclick = function() {
+    const query = document.getElementById('findInput').value;
+    if(!query) return;
+    let cursor = editor.getSearchCursor(query, editor.getCursor("to"));
+    if (!cursor.findNext()) {
+      cursor = editor.getSearchCursor(query, {line: 0, ch: 0});
+      if (!cursor.findNext()) { showFeedback(this, 'Nessun risultato'); return; }
+    }
+    editor.setSelection(cursor.from(), cursor.to());
+    const h = editor.getScrollInfo().clientHeight;
+    const coords = editor.charCoords(cursor.from(), "local");
+    editor.scrollTo(null, (coords.top + coords.bottom) / 2 - h / 2);
+    editor.focus();
+    showFeedback(this, 'Trovato');
+  };
+
+  document.getElementById('replaceBtn').onclick = function() {
+    const query = document.getElementById('findInput').value;
+    const replacement = document.getElementById('replaceInput').value;
+    if(editor.getSelection() === query) {
+      editor.replaceSelection(replacement);
+      document.getElementById('findBtn').click();
+    } else {
+      document.getElementById('findBtn').click();
+    }
+  };
+
+  // --- PATCH FAVICON BUTTON (WITH FEEDBACK) ---
+  (function() {
+    const container = document.querySelector('.search-controls');
+    if(!container || document.getElementById('faviconBtn')) return;
+
+    const btn = document.createElement('button');
+    btn.id = 'faviconBtn';
+    btn.className = 'btn btn-tiny btn-ghost';
+    // Struttura specifica per permettere il feedback visivo
+    btn.innerHTML = '<span>Favicon</span><span class="feedback"></span>';
+    btn.title = 'Gestisci Favicon';
+    container.appendChild(btn);
+
+    btn.onclick = function() {
+      const content = editor.getValue();
+      
+      // 1. Verifica se è HTML
+      if(!/<!doctype html>/i.test(content) && !/<html/i.test(content)) {
+        showFeedback(this, 'Non è HTML'); return;
+      }
+
+      const titleRegex = /(<title>[\s\S]*?<\/title>)/i;
+      const favRegex = /<link[^>]+rel=["'](?:shortcut\s+)?icon["'][^>]*>/i;
+
+      // Verifica presenza Title
+      if(!titleRegex.test(content)) {
+        showFeedback(this, 'Manca <title>'); return;
+      }
+
+      let newCode = content;
+      let msg = "";
+
+      if(favRegex.test(content)) {
+        // 2. Se presente: controlla posizione
+        const match = content.match(favRegex)[0];
+        const titleMatch = content.match(titleRegex);
+        
+        // Se è già subito dopo il title, non fare nulla
+        const checkPos = content.indexOf(match);
+        const titleEnd = content.indexOf('</title>') + 8;
+        
+        // Semplice euristica: se è nei primi 50 caratteri dopo il title, è ok
+        if(checkPos > titleEnd && checkPos < titleEnd + 50) {
+           showFeedback(this, 'Già OK'); return;
+        }
+
+        // Altrimenti sposta
+        newCode = newCode.replace(favRegex, '');
+        newCode = newCode.replace(titleRegex, '$1\n  ' + match);
+        msg = "Spostata";
+      } else {
+        // 4. Se assente: aggiungi
+        newCode = content.replace(titleRegex, '$1\n  <link rel="icon" href="favicon.ico">');
+        msg = "Aggiunta";
+      }
+
+      if(newCode !== content) {
+        saveHistory();
+        editor.setValue(newCode);
+        showFeedback(this, msg);
+      } else {
+        showFeedback(this, 'Fatto');
+      }
+    };
+  })();
+
+  // --- PATCH FAVICON BUTTON ---
+  (function() {
+    const container = document.querySelector('.search-controls');
+    if(!container || document.getElementById('faviconBtn')) return;
+
+    const btn = document.createElement('button');
+    btn.id = 'faviconBtn';
+    btn.className = 'btn btn-tiny btn-ghost';
+    btn.innerHTML = 'Favicon';
+    btn.title = 'Gestisci Favicon';
+    container.appendChild(btn);
+
+    btn.onclick = function() {
+      const content = editor.getValue();
+      
+      // 1. Verifica se è HTML
+      if(!/<!doctype html>/i.test(content) && !/<html/i.test(content)) {
+        showFeedback(this, 'Non è HTML'); return;
+      }
+
+      const titleRegex = /(<title>[\s\S]*?<\/title>)/i;
+      // Regex per favicon (rel="icon" o "shortcut icon")
+      const favRegex = /<link[^>]+rel=["'](?:shortcut\s+)?icon["'][^>]*>/i;
+
+      // Verifica presenza Title
+      if(!titleRegex.test(content)) {
+        showFeedback(this, 'Manca <title>'); return;
+      }
+
+      let newCode = content;
+      let msg = "";
+
+      if(favRegex.test(content)) {
+        // 2. Se presente: controlla posizione (rimuovi e sposta)
+        const match = content.match(favRegex)[0];
+        // Rimuovi la vecchia occorrenza
+        newCode = newCode.replace(favRegex, '');
+        // 3. Sposta sotto il title
+        newCode = newCode.replace(titleRegex, '$1\n  ' + match);
+        msg = "Spostata";
+      } else {
+        // 4. Se assente: aggiungi
+        newCode = content.replace(titleRegex, '$1\n  <link rel="icon" href="favicon.ico">');
+        msg = "Aggiunta";
+      }
+
+      if(newCode !== content) {
+        saveHistory();
+        editor.setValue(newCode);
+        showFeedback(this, msg);
+      } else {
+        showFeedback(this, 'Già OK');
+      }
+    };
+  })();
+
+  const patchModal = document.getElementById('patchModal');
+  const patchStatus = document.getElementById('patchStatus');
+  const undoPatchBtn = document.getElementById('undoPatchBtn');
+  const patchOldInput = document.getElementById('patchOld');
+  const patchNewInput = document.getElementById('patchNew');
+  const patchInstructionsInput = document.getElementById('patchInstructions');
+  const patchIncludeCodeToggle = document.getElementById('patchIncludeCodeToggle');
+
+  document.getElementById('patchBtn').onclick = () => {
+    patchModal.style.display = 'flex';
+    patchStatus.textContent = '';
+    undoPatchBtn.style.display = 'none';
+    patchInstructionsInput.value = '';
+    patchOldInput.focus();
+  };
+
+  document.getElementById('closePatchBtn').onclick = () => patchModal.style.display = 'none';
+
+  function createFuzzyRegex(text) {
+    const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const pattern = escaped.replace(/\s+/g, '\\s+');
+    return new RegExp(pattern, 'i'); 
+  }
+
+  patchOldInput.addEventListener('input', function() {
+    const val = this.value; // Non trimmare subito per preservare spazi significativi se serve
+    const currentContent = editor.getValue();
+    
+    if(!val.trim()) {
+      patchStatus.textContent = '';
+      return;
+    }
+    
+    // 1. Test Regex (Fuzzy)
+    const regex = createFuzzyRegex(val.trim());
+    if(regex.test(currentContent)) {
+      patchStatus.style.color = "green";
+      patchStatus.innerHTML = "✔ <b>Match Perfetto!</b> (Trovato tramite Regex)";
+      return;
+    }
+
+    // 2. Test Anchor (Testa e Coda)
+    const lines = val.split('\n').filter(l => l.trim().length > 2);
+    if (lines.length >= 2) {
+      const startLine = lines[0].trim();
+      const endLine = lines[lines.length - 1].trim();
+      
+      const startIdx = currentContent.indexOf(startLine);
+      const endIdx = currentContent.lastIndexOf(endLine); // Cerca l'ultima occorrenza per sicurezza
+      
+      if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+        patchStatus.style.color = "#007AFF"; // Blu per differenziare
+        patchStatus.innerHTML = "✔ <b>Match Intelligente!</b> (Trovati inizio e fine blocco)";
+        return;
+      }
+    }
+
+    // Se falliscono entrambi
+    patchStatus.style.color = "red";
+    patchStatus.innerHTML = "✖ <b>Nessuna corrispondenza.</b> Il codice non sembra esistere nel file.";
+  });
+
+  document.getElementById('clearPatchFieldsBtn').onclick = function() {
+    patchOldInput.value = '';
+    patchNewInput.value = '';
+    patchInstructionsInput.value = '';
+    patchStatus.textContent = '';
+    patchOldInput.focus();
+  };
+
+  document.getElementById('copyPatchPromptBtn').onclick = function() {
+    const instructions = patchInstructionsInput.value.trim();
+    const includeCode = patchIncludeCodeToggle.checked;
+    const currentCode = editor.getValue();
+
+    let codeBlock = "";
+    if(includeCode) {
+        codeBlock = `CODICE SORGENTE:\n---\n${currentCode}\n---`;
+    } else {
+        codeBlock = `[[ CODICE SORGENTE GIA PRESENTE NELLA MEMORIA ]]`;
+    }
+
+    const extraContext = instructions ? `\n\nRICHIESTA SPECIFICA:\n${instructions}` : "";
+
+    const promptText = `Agisci come un esperto sviluppatore web. Devo applicare una patch manuale a questo codice.${extraContext}
+
+${codeBlock}
+
+Compito:
+Genera SOLO due blocchi di codice per effettuare una sostituzione "Cerca e Sostituisci".
+
+1. **BLOCCO "VECCHIO CODICE" (Da trovare):**
+   - Deve essere una porzione di codice ESISTENTE nel sorgente, copiata carattere per carattere.
+   - IMPORTANTE: Se devi modificare una funzione intera, nel blocco "Vecchio" inserisci SOLO le prime 2 righe e le ultime 2 righe della funzione originale (con un commento // ... nel mezzo se vuoi), oppure copia la funzione intera ESATTAMENTE com'è ora, senza correggere indentazioni o errori.
+   - Il sistema usa una ricerca "Testa e Coda", quindi l'inizio e la fine del blocco devono corrispondere perfettamente al sorgente.
+
+2. **BLOCCO "NUOVO CODICE" (Sostituzione):**
+   - Il codice completo e corretto che andrà a sostituire il blocco vecchio.
+
+Non aggiungere testo discorsivo, solo i due blocchi.`;
+    
+    navigator.clipboard.writeText(promptText);
+    const originalText = this.textContent;
+    this.textContent = "Prompt Copiato!";
+    this.classList.add('btn-blue'); // Feedback visivo
+    setTimeout(() => {
+        this.textContent = originalText;
+        this.classList.remove('btn-blue');
+    }, 2000);
+  };
+  
+  // --- Advanced Undo/Redo System ---
+  let patchHistory = [];
+  let patchRedoStack = [];
+
+  function updateUndoBtnUI() {
+    if (patchHistory.length > 0) {
+      undoPatchBtn.style.display = 'inline-flex';
+      undoPatchBtn.querySelector('span').textContent = `Gestisci Patch (${patchHistory.length})`;
+    } else {
+      undoPatchBtn.style.display = 'none';
+    }
+  }
+
+  function showUndoModal() {
+    let modal = document.getElementById('undoManagerModal');
+    // Crea la modale se non esiste (Injection Dinamica)
+    if (!modal) {
+      modal = document.createElement('div');
+      modal.id = 'undoManagerModal';
+      modal.className = 'modal-overlay';
+      modal.style.zIndex = '1000';
+      modal.innerHTML = `
+        <div class="modal-content" style="width: 450px;">
+          <h3 style="margin:0; color:var(--brand-blue)">Gestione Storico Patch</h3>
+          <p class="lead">Visualizza, annulla o ripristina le patch applicate.</p>
+          
+          <div id="undoManagerInfo" style="background:#F2F2F7; padding:12px; border-radius:8px; font-size:13px; margin-bottom:12px; border:1px solid #E5E5EA;"></div>
+          
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+             <span id="stackStatus" style="font-size:11px; color:#666;"></span>
+             <div style="display:flex; gap:8px;">
+               <button class="btn btn-ghost" onclick="document.getElementById('undoManagerModal').style.display='none'">Chiudi</button>
+               <button id="mgrRedoBtn" class="btn btn-yellow">Ripristina (Redo)</button>
+               <button id="mgrUndoBtn" class="btn btn-danger">Annulla (Undo)</button>
+             </div>
+          </div>
+        </div>`;
+      document.body.appendChild(modal);
+      
+      // Bind Events
+      document.getElementById('mgrUndoBtn').onclick = () => {
+         if(patchHistory.length === 0) return;
+         const lastState = patchHistory.pop();
+         patchRedoStack.push({ content: editor.getValue(), time: new Date() });
+         
+         editor.setValue(lastState.content);
+         saveHistory();
+         refreshManagerUI();
+         updateUndoBtnUI();
+         patchStatus.innerHTML = "↺ <b>Modifica Annullata!</b>";
+      };
+
+      document.getElementById('mgrRedoBtn').onclick = () => {
+         if(patchRedoStack.length === 0) return;
+         const nextState = patchRedoStack.pop();
+         patchHistory.push({ content: editor.getValue(), time: new Date() });
+         
+         editor.setValue(nextState.content);
+         saveHistory();
+         refreshManagerUI();
+         updateUndoBtnUI();
+         patchStatus.innerHTML = "↷ <b>Modifica Ripristinata!</b>";
+      };
+    }
+    
+    refreshManagerUI();
+    modal.style.display = 'flex';
+  }
+
+  function refreshManagerUI() {
+     const info = document.getElementById('undoManagerInfo');
+     const redoBtn = document.getElementById('mgrRedoBtn');
+     const undoBtn = document.getElementById('mgrUndoBtn');
+     const status = document.getElementById('stackStatus');
+
+     status.textContent = `Undo: ${patchHistory.length} | Redo: ${patchRedoStack.length}`;
+     redoBtn.disabled = patchRedoStack.length === 0;
+     undoBtn.disabled = patchHistory.length === 0;
+
+     if (patchHistory.length > 0) {
+       const last = patchHistory[patchHistory.length - 1];
+       info.innerHTML = `<strong>Ultima Patch Applicata:</strong><br>Data: ${last.time.toLocaleTimeString()}<br><br>Premi "Undo" per tornare allo stato precedente.`;
+     } else {
+       info.innerHTML = "Nessuna patch nello storico da annullare.";
+     }
+  }
+
+  document.getElementById('applyPatchBtn').onclick = function() {
+    const oldCodeVal = patchOldInput.value.trim();
+    const newCode = patchNewInput.value; 
+    const currentContent = editor.getValue();
+    
+    if (oldCodeVal === "") {
+      patchStatus.style.color = "red";
+      patchStatus.textContent = "Errore: Inserisci il codice da trovare.";
+      return;
+    }
+
+    const regex = createFuzzyRegex(oldCodeVal);
+
+    if(regex.test(currentContent)) {
+      saveHistory(); // Global history
+      
+      // Salva nello storico Patch specifico
+      patchHistory.push({
+        content: currentContent,
+        time: new Date()
+      });
+      patchRedoStack = []; // Reset redo
+      
+      const updatedContent = currentContent.replace(regex, newCode);
+      editor.setValue(updatedContent);
+      
+      patchStatus.style.color = "green";
+      patchStatus.innerHTML = "✔ <b>Patch applicata!</b>";
+      
+      updateUndoBtnUI();
+      
+      patchOldInput.value = ''; 
+      patchNewInput.value = '';
+      patchInstructionsInput.value = '';
+    } else {
+      patchStatus.style.color = "red";
+      patchStatus.textContent = "✖ Blocco non trovato (nemmeno con ricerca flessibile).";
+    }
+  };
+
+  undoPatchBtn.onclick = function() {
+    showUndoModal();
+  };
+
+  document.getElementById('clearBtn').onclick = () => confirm('Cancellare tutto?') && editor.setValue('');
+  
+  const extSelect = document.getElementById('fileExtension');
+  
+  document.getElementById('downloadBtn').onclick = async function() {
+    const content = editor.getValue();
+    const name = document.getElementById('filename').value || 'progetto';
+    const extension = extSelect.value;
+    const fullName = name + extension;
+
+    if ('showSaveFilePicker' in window) {
+      try {
+        const handle = await window.showSaveFilePicker({
+          suggestedName: fullName,
+          types: [{ description: 'Code File', accept: {'text/plain': [extension]} }],
+        });
+        const writable = await handle.createWritable();
+        await writable.write(content);
+        await writable.close();
+        return;
+      } catch (err) { return; }
+    }
+
+    const blob = new Blob([content], {type: 'text/plain'});
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fullName;
+    a.click();
+  };
+
+  document.getElementById('importBtn').onclick = () => document.getElementById('fileInput').click();
+  document.getElementById('fileInput').onchange = (e) => {
+    const file = e.target.files[0];
+    if(file) {
+      const lastDot = file.name.lastIndexOf('.');
+      if (lastDot !== -1) {
+        document.getElementById('filename').value = file.name.substring(0, lastDot);
+        const ext = file.name.substring(lastDot);
+        if (Array.from(extSelect.options).some(o => o.value === ext)) extSelect.value = ext;
+      } else {
+        document.getElementById('filename').value = file.name;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+          saveHistory(); 
+          editor.setValue(ev.target.result);
+      }
+      reader.readAsText(file);
+    }
+  };
+
+  function setupResizer() {
+    const resizer = document.getElementById('resizer'), ep = document.getElementById('paneEditor'), pp = document.getElementById('panePreview');
+    let isResizing = false;
+    resizer.onmousedown = (e) => { isResizing = true; document.body.style.cursor = 'col-resize'; e.preventDefault(); };
+    document.onmousemove = (e) => {
+      if (!isResizing) return;
+      const w = document.getElementById('workspace').offsetWidth - e.clientX;
+      if (e.clientX > 300 && w > 300) { ep.style.flex = '1'; pp.style.width = w + 'px'; pp.style.flex = 'none'; }
+    };
+    document.onmouseup = () => { isResizing = false; document.body.style.cursor = 'default'; editor.refresh(); };
+  }
+</script>
+</body>
+</html>
       justify-content: center;
       background: linear-gradient(135deg, #FFD60A 0%, #FFB340 100%);
       box-shadow: 0 2px 5px rgba(255, 214, 10, 0.3);
