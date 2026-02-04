@@ -957,43 +957,64 @@ Non aggiungere testo discorsivo, solo i due blocchi.`;
   }
 
   document.getElementById('applyPatchBtn').onclick = function() {
-    const oldCodeVal = patchOldInput.value.trim();
+    const oldCodeVal = patchOldInput.value; // Prendiamo il valore raw
     const newCode = patchNewInput.value; 
     const currentContent = editor.getValue();
     
-    if (oldCodeVal === "") {
+    if (!oldCodeVal.trim()) {
       patchStatus.style.color = "red";
       patchStatus.textContent = "Errore: Inserisci il codice da trovare.";
       return;
     }
 
-    const regex = createFuzzyRegex(oldCodeVal);
-
-    if(regex.test(currentContent)) {
+    // Funzione helper interna per salvare e applicare
+    const applySuccess = (updated) => {
       saveHistory(); // Global history
-      
-      // Salva nello storico Patch specifico
-      patchHistory.push({
-        content: currentContent,
-        time: new Date()
-      });
-      patchRedoStack = []; // Reset redo
-      
-      const updatedContent = currentContent.replace(regex, newCode);
-      editor.setValue(updatedContent);
-      
+      patchHistory.push({ content: currentContent, time: new Date() });
+      patchRedoStack = []; 
+      editor.setValue(updated);
       patchStatus.style.color = "green";
       patchStatus.innerHTML = "✔ <b>Patch applicata!</b>";
-      
       updateUndoBtnUI();
-      
       patchOldInput.value = ''; 
       patchNewInput.value = '';
       patchInstructionsInput.value = '';
-    } else {
-      patchStatus.style.color = "red";
-      patchStatus.textContent = "✖ Blocco non trovato (nemmeno con ricerca flessibile).";
+    };
+
+    // 1. TENTATIVO REGEX (Fuzzy Match standard)
+    const regex = createFuzzyRegex(oldCodeVal.trim());
+    if(regex.test(currentContent)) {
+      applySuccess(currentContent.replace(regex, newCode));
+      return;
     }
+
+    // 2. TENTATIVO SMART MATCH (Testa e Coda)
+    // Utile se l'indentazione interna è diversa ma inizio/fine combaciano
+    const lines = oldCodeVal.trim().split('\n').filter(l => l.trim().length > 2);
+    if (lines.length >= 2) {
+      const startLine = lines[0].trim();
+      const endLine = lines[lines.length - 1].trim();
+      
+      const startIdx = currentContent.indexOf(startLine);
+      // Usiamo lastIndexOf per cercare l'ultima occorrenza della coda, 
+      // per massimizzare le chance di trovare il blocco intero
+      const endIdx = currentContent.lastIndexOf(endLine); 
+      
+      if (startIdx !== -1 && endIdx !== -1 && endIdx > startIdx) {
+         const realEndIdx = endIdx + endLine.length;
+         
+         // Costruisci il nuovo contenuto preservando ciò che c'è prima e dopo
+         const before = currentContent.substring(0, startIdx);
+         const after = currentContent.substring(realEndIdx);
+         
+         applySuccess(before + newCode + after);
+         return;
+      }
+    }
+
+    // 3. FALLIMENTO
+    patchStatus.style.color = "red";
+    patchStatus.textContent = "✖ Blocco non trovato (nemmeno con ricerca intelligente).";
   };
 
   undoPatchBtn.onclick = function() {
