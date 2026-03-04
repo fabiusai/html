@@ -957,8 +957,19 @@ Non aggiungere testo discorsivo, solo i due blocchi.`;
   }
 
   document.getElementById('applyPatchBtn').onclick = function() {
-    const oldCodeVal = patchOldInput.value; // Prendiamo il valore raw
-    const newCode = patchNewInput.value; 
+    let oldCodeVal = patchOldInput.value; 
+    let newCode = patchNewInput.value;
+
+    // --- PULIZIA AUTOMATICA HEADERS AI ---
+    // Se la prima riga contiene "VECCHIO CODICE" o "NUOVO CODICE" (es. commenti copiati), la rimuove.
+    if (oldCodeVal && /vecchio\s+codice/i.test(oldCodeVal.split('\n')[0])) {
+      oldCodeVal = oldCodeVal.substring(oldCodeVal.indexOf('\n') + 1);
+    }
+    if (newCode && /nuovo\s+codice/i.test(newCode.split('\n')[0])) {
+      newCode = newCode.substring(newCode.indexOf('\n') + 1);
+    }
+    // -------------------------------------
+
     const currentContent = editor.getValue();
     
     if (!oldCodeVal.trim()) {
