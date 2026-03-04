@@ -783,7 +783,12 @@
   }
 
   patchOldInput.addEventListener('input', function() {
-    const val = this.value; // Non trimmare subito per preservare spazi significativi se serve
+    let val = this.value;
+    // CLEANING LIVE: Rimuove la riga di commento "VECCHIO CODICE" per far funzionare il check in tempo reale
+    if (val && /^\s*\/\/\s*(vecchio|nuovo)\s+codice/i.test(val)) {
+      val = val.substring(val.indexOf('\n') + 1);
+    }
+
     const currentContent = editor.getValue();
     
     if(!val.trim()) {
@@ -957,19 +962,8 @@ Non aggiungere testo discorsivo, solo i due blocchi.`;
   }
 
   document.getElementById('applyPatchBtn').onclick = function() {
-    let oldCodeVal = patchOldInput.value; 
-    let newCode = patchNewInput.value;
-
-    // --- PULIZIA AUTOMATICA HEADERS AI ---
-    // Se la prima riga contiene "VECCHIO CODICE" o "NUOVO CODICE" (es. commenti copiati), la rimuove.
-    if (oldCodeVal && /vecchio\s+codice/i.test(oldCodeVal.split('\n')[0])) {
-      oldCodeVal = oldCodeVal.substring(oldCodeVal.indexOf('\n') + 1);
-    }
-    if (newCode && /nuovo\s+codice/i.test(newCode.split('\n')[0])) {
-      newCode = newCode.substring(newCode.indexOf('\n') + 1);
-    }
-    // -------------------------------------
-
+    const oldCodeVal = patchOldInput.value; // Prendiamo il valore raw
+    const newCode = patchNewInput.value; 
     const currentContent = editor.getValue();
     
     if (!oldCodeVal.trim()) {
